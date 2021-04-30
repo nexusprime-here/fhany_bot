@@ -1,0 +1,34 @@
+{
+    "token": "NzA5MDcyNjY5MDIyMzU1NDg2.XrglYg.dQfJVxgfnPwnmqTmjIJITYNiZhc",
+    "prefix": "!",
+    "botId": "709072669022355486",
+    "guildId": "772812962397421589",
+    "fhanyPresenceDetector": {
+        "fhanyId": "607999934725357578",
+        "channelsId": ["772812962854338561", "772812962854338563"],
+        "roles": {
+            "silence": "779055012038311944"
+        }
+    },
+    "temporaryCalls": {
+        "normal": {
+            "controllerChannel": "811380233894232106",
+            "category": "772812962854338564"
+        },
+        "games": {
+            "controllerChannel": "819294096572809236",
+            "category": "811380652740968460"
+        },
+        "roles": {
+            "booster": "750451871084445788",
+            "vip": "750137067438342224"
+        }
+    },
+    "suggestion": {
+        "channelId": "813131329339260940",
+        "permittedRoles": ["779055143815348244", "779055272488206377"]
+    },
+    "reminder": {
+        "postChannel": "782049949625352243"
+    }
+}
