@@ -22,5 +22,8 @@ exports.default = {
         .setTitle('❌ Usuário inválido')
         .setDescription('Você não pode mudar a permissão deste usuário porque ele faz parte da Staff')
         .setColor('#e31c17')
-        .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'); }
+        .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'); },
+    help: function (prefix, command, mentionId) { return new discord_js_1.MessageEmbed()
+        .setTitle(command)
+        .setDescription("Este comando modifica as permiss\u00F5es do seu canal exclusivo, que voc\u00EA pode criar com o comando `" + prefix + "criarcanal`. \n\nPara mudar a permiss\u00E3o de um usu\u00E1rio, voc\u00EA tem que dizer a permiss\u00E3o que quer modificar. \nVoc\u00EA pode modificar 4 permiss\u00F5es: `ver`, `conectar`, `convidar` e `transmitir`. \n\nVoc\u00EA pode ativar ou desativar a permiss\u00E3o com: `on` e `off`. \n\nPor \u00FAltimo, Mencione o usu\u00E1rio que voc\u00EA quer mudar essas permiss\u00F5es. Ex: \n\n`" + prefix + command + " ver on <@" + mentionId + ">`"); }
 };

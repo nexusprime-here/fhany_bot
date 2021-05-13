@@ -42,13 +42,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var database_1 = __importDefault(require("../database"));
 var commands_createCall_1 = __importDefault(require("../embeds/commands.createCall"));
 module.exports = {
-    name: 'createcall',
+    name: 'criarcanal',
     description: 'Cria um canal exclusivo para você, onde você pode mudar as permissões e desconectar outros membros.',
     booster: true,
     usage: '<publico/privado> [Nome do canal]',
     execute: execute
 };
-function execute(message, args) {
+function execute(message, args, client, config) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
         function createChannelVoice(type) {
@@ -121,7 +121,7 @@ function execute(message, args) {
         return __generator(this, function (_c) {
             type = args[0], channelName = args.slice(1);
             if (!type)
-                return [2 /*return*/, message.reply(commands_createCall_1.default.help)];
+                return [2 /*return*/, message.reply(commands_createCall_1.default.help(config.prefix, this.name))];
             userInDatabase = database_1.default.get('boostersThatCreatedCalls').find({ userId: message.author.id }).value();
             if (channelName.join(' ').length > 20)
                 return [2 /*return*/, message.channel.send(commands_createCall_1.default.nameVeryLarge)];

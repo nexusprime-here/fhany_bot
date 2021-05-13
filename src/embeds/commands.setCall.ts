@@ -24,5 +24,11 @@ export default {
         .setTitle('❌ Usuário inválido')
         .setDescription('Você não pode mudar a permissão deste usuário porque ele faz parte da Staff')
         .setColor('#e31c17')
+        .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'),
+
+    help: (prefix: string, command: string, mentionId: string | undefined) => new MessageEmbed()
+        .setTitle(command)
+        .setDescription(`Este comando modifica as permissões do seu canal exclusivo, que você pode criar com o comando \`${prefix}criarcanal\`. \n\nPara mudar a permissão de um usuário, você tem que dizer a permissão que quer modificar. \nVocê pode modificar 4 permissões: \`ver\`, \`conectar\`, \`convidar\` e \`transmitir\`. \n\nVocê pode ativar ou desativar a permissão com: \`on\` e \`off\`. \n\nPor último, Mencione o usuário que você quer mudar essas permissões. Ex: \n\n\`${prefix}${command} ver on <@${mentionId}>\``)
         .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>')
+        .setColor('#F55EB3'),
 }

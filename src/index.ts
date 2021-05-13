@@ -143,7 +143,7 @@ type Commands = Map<string, {
 	booster?: boolean,
 	usage?: string,
 	cooldown?: number,
-	execute: (message: Message, args: string[], client: Client, config: {}) => void
+	execute: (message: Message, args: string[], client: Client, config: IConfig | any) => void
 }>
 
 type Cooldowns = Map<string, any>;

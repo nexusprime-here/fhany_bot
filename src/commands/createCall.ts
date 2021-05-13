@@ -1,20 +1,21 @@
-import { GuildChannel, GuildMember, Message } from "discord.js";
+import { Client, GuildChannel, GuildMember, Message } from "discord.js";
+import { IConfig } from "..";
 import db from '../database';
 
 import embed from '../embeds/commands.createCall';
 
 module.exports = {
-    name: 'createcall',
+    name: 'criarcanal',
     description: 'Cria um canal exclusivo para você, onde você pode mudar as permissões e desconectar outros membros.',
     booster: true,
     usage: '<publico/privado> [Nome do canal]',
     execute
 }
 
-async function execute(message: Message, args: string[]) {
+async function execute(this: { name: string }, message: Message, args: string[], client: Client, config: IConfig) {
     const [ type, ...channelName ] = args;
 
-    if(!type) return message.reply(embed.help)
+    if(!type) return message.reply(embed.help(config.prefix, this.name))
 
     const userInDatabase: IUserDb = db.get('boostersThatCreatedCalls').find({ userId: message.author.id }).value();
 
