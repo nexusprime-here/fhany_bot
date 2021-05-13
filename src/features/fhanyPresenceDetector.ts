@@ -31,16 +31,25 @@ function execute(client: Client, config: IConfig) {
         } else {
             if(!await mentionTheFhany(message)) return;
 
-            const member = message.guild?.members.cache.get(message.author.id);
-            
-            if(!member) return;
-            if(!member.roles.cache.filter(role => config.staffers.includes(role.id))) return;
+            if(await isStaffer()) return;
 
             
             fhanyActiveCache.length === 0 && deleteUserMessage(message);
         }
         
         
+
+        function isStaffer() {
+            const member = message.guild?.members.cache.get(message.author.id);
+
+            return new Promise<boolean>(terminated => {
+                member?.roles.cache.forEach(role => {
+                    config.staffers.includes(role.id) && terminated(true);
+                });
+
+                terminated(false);
+            });
+        }
         function mentionTheFhany(message: Message) {
             return new Promise<boolean>((terminated) => {
                 const fhany = client.guilds.cache.get(config.guild)?.members.cache.get(config.fhanyPresenceDetector.fhany);

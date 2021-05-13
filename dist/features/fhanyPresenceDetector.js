@@ -50,6 +50,16 @@ function execute(client, config) {
     var fhanyActiveCache = []; // I used Array from detect if the Fhany is inactive more easy, if an array is empty, she is inactive
     var wrongMentionsCache = [];
     client.on('message', function (message) { return __awaiter(_this, void 0, void 0, function () {
+        function isStaffer() {
+            var _a;
+            var member = (_a = message.guild) === null || _a === void 0 ? void 0 : _a.members.cache.get(message.author.id);
+            return new Promise(function (terminated) {
+                member === null || member === void 0 ? void 0 : member.roles.cache.forEach(function (role) {
+                    config.staffers.includes(role.id) && terminated(true);
+                });
+                terminated(false);
+            });
+        }
         function mentionTheFhany(message) {
             return new Promise(function (terminated) {
                 var _a;
@@ -95,10 +105,9 @@ function execute(client, config) {
                 return wrongMentionsCache.filter(function (member) { return member.id === user.id; });
             }
         }
-        var fetchChannel, count, member;
-        var _a;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var fetchChannel, count;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0:
                     if (message.author.bot)
                         return [2 /*return*/];
@@ -111,24 +120,23 @@ function execute(client, config) {
                     cleanOldCache();
                     return [4 /*yield*/, pushNewCache(count)];
                 case 1:
-                    _b.sent();
+                    _a.sent();
                     return [4 /*yield*/, cleanCacheIn(1000 * 60, count)];
                 case 2:
-                    _b.sent();
+                    _a.sent();
                     fhanyActiveCache.length === 0 && warnAllUsersOfFhanyOff(fetchChannel);
-                    return [3 /*break*/, 5];
+                    return [3 /*break*/, 6];
                 case 3: return [4 /*yield*/, mentionTheFhany(message)];
                 case 4:
-                    if (!(_b.sent()))
+                    if (!(_a.sent()))
                         return [2 /*return*/];
-                    member = (_a = message.guild) === null || _a === void 0 ? void 0 : _a.members.cache.get(message.author.id);
-                    if (!member)
-                        return [2 /*return*/];
-                    if (!member.roles.cache.filter(function (role) { return config.staffers.includes(role.id); }))
+                    return [4 /*yield*/, isStaffer()];
+                case 5:
+                    if (_a.sent())
                         return [2 /*return*/];
                     fhanyActiveCache.length === 0 && deleteUserMessage(message);
-                    _b.label = 5;
-                case 5:
+                    _a.label = 6;
+                case 6:
                     ;
                     ;
                     return [2 /*return*/];
