@@ -7,13 +7,15 @@ var database_1 = __importDefault(require("../database"));
 var commands_setCall_1 = __importDefault(require("../embeds/commands.setCall"));
 module.exports = {
     name: 'setcall',
-    description: '',
+    description: 'Modifica permissões de usuários',
+    booster: true,
     args: true,
-    usage: '<video/connect/invite> <true/false> @user',
+    usage: '<transmitir/conectar/convidar/ver> <on/off> @user',
     execute: execute
 };
 function execute(message, args) {
     var _a;
+    var _b;
     var voiceChannel = getBoosterCall();
     if (!voiceChannel)
         return message.channel.send(commands_setCall_1.default.notCreatedChannel);
@@ -23,7 +25,9 @@ function execute(message, args) {
         'convidar': 'CREATE_INSTANT_INVITE',
         'video': 'STREAM'
     };
-    var userPermission = args[0], boolean = args[1];
+    var moderator = '748601213079126027';
+    var userPermission = args[0], keymode = args[1];
+    var boolean = keymode === 'on' ? true : false;
     if (userPermission === 'fechar' || userPermission === 'excluir')
         return function () {
             !voiceChannel.deleted && voiceChannel.delete();
@@ -35,8 +39,11 @@ function execute(message, args) {
     var taggedUser = message.mentions.users.first();
     if (!taggedUser)
         return;
+    var user = (_b = message.guild) === null || _b === void 0 ? void 0 : _b.members.cache.get(taggedUser.id);
+    if (user === null || user === void 0 ? void 0 : user.roles.cache.has(moderator))
+        return commands_setCall_1.default.isModerator;
     voiceChannel.updateOverwrite(taggedUser.id, (_a = {},
-        _a[permission] = boolean === 'true',
+        _a[permission] = boolean === true,
         _a)).then(function () {
         message.channel.send(commands_setCall_1.default.sucessMessage(taggedUser.id, permission, boolean));
     });

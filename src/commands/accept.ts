@@ -1,4 +1,5 @@
 import { Client, Message } from "discord.js";
+import { IConfig } from "..";
 import database from '../database';
 import embed from '../embeds/commands.accept';
 
@@ -7,7 +8,7 @@ const db: any = database
 module.exports = {
     name: 'accept', 
     description: 'Aceita uma sugestão do canal sugestões',
-    async execute(message: Message, args: string[], client: Client, config: any) {
+    async execute(message: Message, args: string[], client: Client, config: IConfig) {
         if(!await isStaff()) return deleteCommandMessage();
         if(!message.reference) return sendErrorMessageAndRemoveCommandMessage();
         if(!message.reference.messageID) return sendErrorMessageAndRemoveCommandMessage();
@@ -27,7 +28,7 @@ module.exports = {
         }
         function isStaff() {
             return new Promise<boolean>((terminated => {
-                const guild = client.guilds.cache.get(config.guildId);
+                const guild = client.guilds.cache.get(config.guild);
                 const member = guild?.members.cache.find(member => member.id === message.author.id);
     
                 member?.roles.cache.forEach(role => {

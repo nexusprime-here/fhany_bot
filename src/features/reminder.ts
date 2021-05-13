@@ -4,6 +4,7 @@ const db = database;
 
 import embed from '../embeds/features.reminder';
 import { IReminder } from "../commands/reminder";
+import { IConfig } from "..";
 
 module.exports = {
     name: 'Reminder',
@@ -11,13 +12,13 @@ module.exports = {
     execute
 };
 
-function execute(client: Client, config: any) {setInterval(() => {
+function execute(client: Client, config: IConfig) {setInterval(() => {
     const date = new Date();
 
     const reminders: IReminder[] = db.get('reminders').value();
     
     reminders.forEach(reminder => {
-        const guild = client.guilds.cache.get(config.guildId);
+        const guild = client.guilds.cache.get(config.guild);
         const postChannel: any = guild?.channels.cache.get(config.reminder.postChannel); 
 
         if(reminder.hours !== date.getHours()) return;

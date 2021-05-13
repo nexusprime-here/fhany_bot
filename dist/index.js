@@ -54,10 +54,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from) {
-    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
-        to[j] = from[i];
-    return to;
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
 };
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -86,7 +88,7 @@ var _loop_1 = function (file) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return event_1.execute.apply(event_1, __spreadArray(__spreadArray([], args), [exports.client]));
+            return event_1.execute.apply(event_1, __spreadArrays(args, [exports.client]));
         });
     }
     else {
@@ -95,7 +97,7 @@ var _loop_1 = function (file) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return event_1.execute.apply(event_1, __spreadArray(__spreadArray([], args), [exports.client]));
+            return event_1.execute.apply(event_1, __spreadArrays(args, [exports.client]));
         });
     }
 };
@@ -127,9 +129,9 @@ function startFeatures(client) {
 }
 ;
 exports.client.on('message', function (message) { return __awaiter(void 0, void 0, void 0, function () {
-    var args, commandName, command, authorPerms, roles_1, findRole_1, reply, now, timestamps, cooldownAmount, expirationTime, timeLeft;
-    var _a, _b, _c;
-    return __generator(this, function (_d) {
+    var args, commandName, command, member, authorPerms, roles_1, findRole_1, reply, now, timestamps, cooldownAmount, expirationTime, timeLeft;
+    var _a, _b, _c, _d;
+    return __generator(this, function (_e) {
         if (!message.content.startsWith(configtest_json_1.prefix) || message.author.bot)
             return [2 /*return*/];
         args = message.content.slice(configtest_json_1.prefix.length).split(/ +/);
@@ -139,6 +141,11 @@ exports.client.on('message', function (message) { return __awaiter(void 0, void 
         command = commands.get(commandName);
         if (!command)
             return [2 /*return*/];
+        if (command.booster) {
+            member = (_b = message.guild) === null || _b === void 0 ? void 0 : _b.members.cache.get(message.author.id);
+            if (!(member === null || member === void 0 ? void 0 : member.roles.cache.has('779055195028062269')))
+                return [2 /*return*/, message.reply(src_index_1.default.notBooster)];
+        }
         if (command.guildOnly && message.channel.type !== 'text') {
             return [2 /*return*/, message.reply(src_index_1.default.notDM)];
         }
@@ -154,7 +161,7 @@ exports.client.on('message', function (message) { return __awaiter(void 0, void 
         }
         ;
         if (command.roles) {
-            roles_1 = (_c = (_b = message.guild) === null || _b === void 0 ? void 0 : _b.members.cache.get(message.author.id)) === null || _c === void 0 ? void 0 : _c.roles.cache;
+            roles_1 = (_d = (_c = message.guild) === null || _c === void 0 ? void 0 : _c.members.cache.get(message.author.id)) === null || _d === void 0 ? void 0 : _d.roles.cache;
             command.roles.forEach(function (role) {
                 findRole_1 = roles_1 === null || roles_1 === void 0 ? void 0 : roles_1.has(role);
             });

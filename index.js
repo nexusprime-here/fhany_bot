@@ -4,7 +4,7 @@ const app = express();
 app.get('/', (req, res) => {
 	const date = new Date();
 
-	console.log(`Ping recebido: ${date.getDay()}/${date.getMonth()} às ${date.getHours()}:${date.getMinutes()}`)
+	console.log(`Ping recebido: ${date.getDate()}/${date.getMonth() + 1} às ${date.getHours() - 3}:${date.getMinutes()}`)
 	res.sendStatus(200)
 })
 

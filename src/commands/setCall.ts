@@ -5,9 +5,10 @@ import embed from '../embeds/commands.setCall';
 
 module.exports = {
     name: 'setcall',
-    description: '',
+    description: 'Modifica permissões de usuários',
+    booster: true,
     args: true,
-    usage: '<video/connect/invite> <true/false> @user',
+    usage: '<transmitir/conectar/convidar/ver> <on/off> @user',
     execute
 }
 
@@ -21,8 +22,10 @@ function execute(message: Message, args: string[]) {
         'convidar': 'CREATE_INSTANT_INVITE',
         'video': 'STREAM'
     }
+    const moderator = '748601213079126027'
 
-    const [ userPermission, boolean ] = args;
+    const [ userPermission, keymode ] = args;
+    const boolean = keymode === 'on' ? true : false;
 
     if(userPermission === 'fechar' || userPermission === 'excluir') return function() {
         !voiceChannel.deleted && voiceChannel.delete();
@@ -35,8 +38,11 @@ function execute(message: Message, args: string[]) {
     const taggedUser = message.mentions.users.first();
     if(!taggedUser) return
 
+    const user = message.guild?.members.cache.get(taggedUser.id);
+    if(user?.roles.cache.has(moderator)) return embed.isModerator
+
     voiceChannel.updateOverwrite(taggedUser.id, {
-        [permission]: boolean === 'true',
+        [permission]: boolean === true,
     }).then(() => {
         message.channel.send(embed.sucessMessage(taggedUser.id, permission, boolean));
     })

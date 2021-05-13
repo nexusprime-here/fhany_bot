@@ -3,7 +3,9 @@
   "version": "7.0.0",
   "description": "Este é um bot de discord que fiz para a Fhany, uma youtuber. Feito com muito carinho <3.",
   "main": "dist/index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "tsc && node ."
+  },
   "repository": {
     "note": "Tem muita coisa repetida, eu sei, o motivo é que o DisCloud(host que usavamos) não tinha suporte a ts, então tive muitos problemas com a pasta dist.",
     "url": "https://github.com/XNexusPrimeX/fhany_bot"
@@ -13,8 +15,7 @@
     "email": "nicolasestevaolima104@gmail.com",
     "url": "https://github.com/XNexusPrimeX/",
     "discord": {
-      "username": "</N3xus_Pr1m3>",
-      "discriminator": "0753",
+      "username": "</Nexus_Prime>",
       "id": "607999934725357578"
     }
   },

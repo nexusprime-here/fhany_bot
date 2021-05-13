@@ -9,6 +9,8 @@ module.exports = {
     async execute(message: Message, args: any[], client: Client) {
         const arg: 'add' | 'remove' = args[0]
 
+        // if(arg === undefined) return message.reply(embed.help)
+
         const acceptedArgs = {
             'add': async () => {
                 const newMessage = await message.channel.send({ embed: { description: 'Carregando...' } });

@@ -55,7 +55,7 @@ module.exports = {
             }
             function isStaff() {
                 return new Promise((function (terminated) {
-                    var guild = client.guilds.cache.get(config.guildId);
+                    var guild = client.guilds.cache.get(config.guild);
                     var member = guild === null || guild === void 0 ? void 0 : guild.members.cache.find(function (member) { return member.id === message.author.id; });
                     member === null || member === void 0 ? void 0 : member.roles.cache.forEach(function (role) {
                         config.suggestion.permittedRoles.forEach(function (role2) {

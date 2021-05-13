@@ -5,15 +5,16 @@ import embed from '../embeds/commands.createCall';
 
 module.exports = {
     name: 'createcall',
-    description: '',
-    args: true,
-    usage: '<public/private> [Nome do canal]',
-    roles: ['779054882916925480'],
+    description: 'Cria um canal exclusivo para você, onde você pode mudar as permissões e desconectar outros membros.',
+    booster: true,
+    usage: '<publico/privado> [Nome do canal]',
     execute
 }
 
-function execute(message: Message, args: string[]) {
+async function execute(message: Message, args: string[]) {
     const [ type, ...channelName ] = args;
+
+    if(!type) return message.reply(embed.help)
 
     const userInDatabase: IUserDb = db.get('boostersThatCreatedCalls').find({ userId: message.author.id }).value();
 
@@ -23,11 +24,11 @@ function execute(message: Message, args: string[]) {
 
     const everyone = message.guild?.roles.everyone.id;
 
-    if(type === 'public' || type === 'private') {
+    if(type === 'publico' || type === 'privado') {
         createChannelVoice(type)?.then(channel => {
             if(!channel) return
 
-            message.channel.send(embed.channelCreated(type === 'private', channel?.id))
+            message.channel.send(embed.channelCreated(type === 'privado', channel?.id))
             waitForUsersToJoin(channel, message.author.id);
         });
     }
@@ -36,13 +37,15 @@ function execute(message: Message, args: string[]) {
     }
 
 
-    async function createChannelVoice(type: 'public' | 'private') {
+    async function createChannelVoice(type: 'publico' | 'privado') {
         if(!everyone) return
+
+        const moderator = '748601213079126027'
 
         const channel = await message.guild?.channels.create(`❖ ${channelName.join(' ')}`, {
             parent: '772812962854338564',
             type: 'voice',
-            permissionOverwrites: type === 'public' ? [
+            permissionOverwrites: type === 'publico' ? [
                 { 
                     id: everyone,
                     allow: ['VIEW_CHANNEL', 'CONNECT'] 
@@ -60,6 +63,10 @@ function execute(message: Message, args: string[]) {
                 {
                     id: message.author.id,
                     allow: ['VIEW_CHANNEL', 'PRIORITY_SPEAKER', 'MOVE_MEMBERS', 'CREATE_INSTANT_INVITE']
+                },
+                {
+                    id: moderator,
+                    allow: ['VIEW_CHANNEL', 'CONNECT']
                 }
             ]
         });

@@ -29,6 +29,12 @@ export default {
         .setDescription(`Você não tem cargo para executar esse comando. \n\n Você precisa de um dos cargos: ${transformInTag(roles).join(', ')}`)
         .setColor('#e31c17')
         .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'),
+
+    notBooster: new MessageEmbed()
+        .setTitle('<a:booster:840231970696462397> Seja booster')
+        .setDescription('Você não pode usar este comando pois você não deu boost no servidor ainda. \n\nDe boost agora e ajude o servidor, alem de ter várias vantagens descritas no <#797930500231790633>!')
+        .setColor('#FF5EF4')
+        .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'),
 }
 
 function transformInTag(roles: string[]) {

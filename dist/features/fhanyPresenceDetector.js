@@ -53,11 +53,11 @@ function execute(client, config) {
         function mentionTheFhany(message) {
             return new Promise(function (terminated) {
                 var _a;
-                var fhany = (_a = client.guilds.cache.get(config.guildId)) === null || _a === void 0 ? void 0 : _a.members.cache.get(config.fhanyPresenceDetector.fhanyId);
+                var fhany = (_a = client.guilds.cache.get(config.guild)) === null || _a === void 0 ? void 0 : _a.members.cache.get(config.fhanyPresenceDetector.fhany);
                 if (!fhany)
                     return;
                 fhany.roles.cache.forEach(function (role) {
-                    message.mentions.users.has(config.fhanyPresenceDetector.fhanyId) && terminated(true);
+                    message.mentions.users.has(config.fhanyPresenceDetector.fhany) && terminated(true);
                     message.mentions.roles.has(role.id) && terminated(true);
                 });
                 terminated(false);
@@ -73,7 +73,7 @@ function execute(client, config) {
                 && message.reply(features_fhanyPresenceDetector_1.default.mentionFhanyNotPermitted3(message))
                 && removeSilenceRole(searchUserInCache(message.author)[0]);
             message.delete();
-            var guild = client.guilds.cache.get(config.guildId);
+            var guild = client.guilds.cache.get(config.guild);
             var user = guild === null || guild === void 0 ? void 0 : guild.members.cache.get(message.author.id);
             !!user && wrongMentionsCache.push(user);
             setTimeout(deleteMentionCache, 1000 * 60 * 30);
@@ -95,33 +95,39 @@ function execute(client, config) {
                 return wrongMentionsCache.filter(function (member) { return member.id === user.id; });
             }
         }
-        var fetchChannel, count;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var fetchChannel, count, member;
+        var _a;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
                     if (message.author.bot)
                         return [2 /*return*/];
-                    if (!config.fhanyPresenceDetector.channelsId.includes(message.channel.id))
+                    if (!config.chats.includes(message.channel.id))
                         return [2 /*return*/];
-                    if (!(message.author.id === config.fhanyPresenceDetector.fhanyId)) return [3 /*break*/, 3];
+                    if (!(message.author.id === config.fhanyPresenceDetector.fhany)) return [3 /*break*/, 3];
                     fetchChannel = client.channels.cache.get(message.channel.id);
                     count = getLastNumber();
                     fhanyActiveCache.length === 0 && warnAllUsersOfFhanyOn(fetchChannel);
                     cleanOldCache();
                     return [4 /*yield*/, pushNewCache(count)];
                 case 1:
-                    _a.sent();
+                    _b.sent();
                     return [4 /*yield*/, cleanCacheIn(1000 * 60, count)];
                 case 2:
-                    _a.sent();
+                    _b.sent();
                     fhanyActiveCache.length === 0 && warnAllUsersOfFhanyOff(fetchChannel);
                     return [3 /*break*/, 5];
                 case 3: return [4 /*yield*/, mentionTheFhany(message)];
                 case 4:
-                    if (!(_a.sent()))
+                    if (!(_b.sent()))
+                        return [2 /*return*/];
+                    member = (_a = message.guild) === null || _a === void 0 ? void 0 : _a.members.cache.get(message.author.id);
+                    if (!member)
+                        return [2 /*return*/];
+                    if (!member.roles.cache.filter(function (role) { return config.staffers.includes(role.id); }))
                         return [2 /*return*/];
                     fhanyActiveCache.length === 0 && deleteUserMessage(message);
-                    _a.label = 5;
+                    _b.label = 5;
                 case 5:
                     ;
                     ;
@@ -134,9 +140,9 @@ function execute(client, config) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!config.fhanyPresenceDetector.channelsId.includes(channel.id))
+                    if (!config.chats.includes(channel.id))
                         return [2 /*return*/];
-                    if (user.id !== config.fhanyPresenceDetector.fhanyId)
+                    if (user.id !== config.fhanyPresenceDetector.fhany)
                         return [2 /*return*/];
                     fetchChannel = client.channels.cache.get(channel.id);
                     count = getLastNumber();

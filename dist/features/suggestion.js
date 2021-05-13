@@ -50,7 +50,7 @@ module.exports = {
 };
 function execute(client, config) {
     var _this = this;
-    var channel = client.channels.cache.get(config.suggestion.channelId);
+    var channel = client.channels.cache.get(config.suggestion.channel);
     var suggestionsCache = db.get('suggestionsCache').value();
     (channel === null || channel === void 0 ? void 0 : channel.type) === 'text' && deleteAllOldMessages(channel);
     reloadSuggestions();
@@ -59,7 +59,7 @@ function execute(client, config) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (message.channel.id !== config.suggestion.channelId)
+                    if (message.channel.id !== config.suggestion.channel)
                         return [2 /*return*/];
                     if (message.author.bot)
                         return [2 /*return*/];
@@ -80,7 +80,7 @@ function execute(client, config) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (data.message.channel.id !== config.suggestion.channelId)
+                    if (data.message.channel.id !== config.suggestion.channel)
                         return [2 /*return*/];
                     if (user.bot)
                         return [2 /*return*/];
@@ -177,7 +177,7 @@ function execute(client, config) {
                             else
                                 return 0;
                         });
-                        channel = (_a = client.guilds.cache.get(config.guildId)) === null || _a === void 0 ? void 0 : _a.channels.cache.get(config.suggestion.channelId);
+                        channel = (_a = client.guilds.cache.get(config.guild)) === null || _a === void 0 ? void 0 : _a.channels.cache.get(config.suggestion.channel);
                         if (!(channel === null || channel === void 0 ? void 0 : channel.isText()))
                             return [2 /*return*/];
                         return [4 /*yield*/, channel.messages.fetch({ limit: 100 })];

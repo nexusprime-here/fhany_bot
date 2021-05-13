@@ -1,4 +1,5 @@
 import { Client, Message, User, PartialUser, MessageEmbed } from "discord.js";
+import { IConfig } from "..";
 import database from "../database";
 import embed from "../embeds/features.suggestion";
 
@@ -10,8 +11,8 @@ module.exports = {
     execute
 }
 
-function execute(client: Client, config: any) {
-    const channel = client.channels.cache.get(config.suggestion.channelId);
+function execute(client: Client, config: IConfig) {
+    const channel = client.channels.cache.get(config.suggestion.channel);
 
     const suggestionsCache: ISuggestionMessage[] = db.get('suggestionsCache').value();
 
@@ -21,7 +22,7 @@ function execute(client: Client, config: any) {
     let actionsCache: number = 0;
     
     client.on('message', async message => {
-        if(message.channel.id !== config.suggestion.channelId) return;
+        if(message.channel.id !== config.suggestion.channel) return;
         if(message.author.bot) return;
         if(message.content.startsWith(config.prefix) && message.author.id) return;
 
@@ -34,7 +35,7 @@ function execute(client: Client, config: any) {
     });
 
     client.on('messageReactionAdd', async (data, user) => {
-        if(data.message.channel.id !== config.suggestion.channelId) return;
+        if(data.message.channel.id !== config.suggestion.channel) return;
         if(user.bot) return;
 
         actionsCache++;
@@ -107,7 +108,7 @@ function execute(client: Client, config: any) {
             else return 0
         });
 
-        const channel = client.guilds.cache.get(config.guildId)?.channels.cache.get(config.suggestion.channelId); // type bug ;-;
+        const channel = client.guilds.cache.get(config.guild)?.channels.cache.get(config.suggestion.channel); // type bug ;-;
         if(!channel?.isText()) return;
 
         const allMessages = await channel.messages.fetch({ limit: 100 });

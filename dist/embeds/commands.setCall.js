@@ -18,4 +18,9 @@ exports.default = {
         .setDescription("O usu\u00E1rio <@" + userId + "> teve uma a permiss\u00E3o `" + permission + "` mudado para o estado `" + boolean + "` com sucesso!")
         .setColor('#00FF00')
         .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'); },
+    isModerator: function (options) { return new discord_js_1.MessageEmbed()
+        .setTitle('❌ Usuário inválido')
+        .setDescription('Você não pode mudar a permissão deste usuário porque ele faz parte da Staff')
+        .setColor('#e31c17')
+        .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'); }
 };

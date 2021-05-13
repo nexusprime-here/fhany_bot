@@ -4,7 +4,6 @@ import fs from 'fs';
 import config, { token, prefix } from './config/configtest.json';
 import embed from './embeds/src.index';
 
-
 export const client = new Discord.Client({ partials: ['REACTION'] });
 
 const commands: Commands = new Discord.Collection();
@@ -63,9 +62,15 @@ client.on('message', async message => {
 
 	if (!command) return;
 
+	if(command.booster) {
+		const member = message.guild?.members.cache.get(message.author.id);
+
+		if(!member?.roles.cache.has('779055195028062269')) return message.reply(embed.notBooster)
+	}
 	if (command.guildOnly && message.channel.type !== 'text') {
 		return message.reply(embed.notDM);
 	};
+
 
 	if (command.permissions) {
 		if(message.channel.type !== 'text') return;
@@ -134,10 +139,46 @@ type Commands = Map<string, {
 	args?: boolean,
 	guildOnly?: boolean,
 	permissions?: [],
-	roles?: string[] 
+	roles?: string[],
+	booster?: boolean,
 	usage?: string,
 	cooldown?: number,
 	execute: (message: Message, args: string[], client: Client, config: {}) => void
 }>
 
 type Cooldowns = Map<string, any>;
+
+export type IConfig = {
+	token: string,
+	prefix: string,
+	guild: string,
+	chats: string[],
+	staffers: string[],
+	fhanyPresenceDetector: {
+		fhany: string,
+		roles: {
+			silence: string
+		},
+	},
+	temporaryCalls: {
+		normal: {
+			controllerChannel: string,
+			category: string
+		},
+		games: {
+			controllerChannel: string,
+			category: string
+		},
+		roles: {
+			booster: string,
+			vip: string
+		}
+	},
+	suggestion: {
+		channel: string,
+		permittedRoles: string[]
+	},
+	reminder: {
+		postChannel: string
+	}
+}

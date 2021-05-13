@@ -51,7 +51,7 @@ function execute(client, config) {
         var guild, controllerMessage;
         var _this = this;
         return __generator(this, function (_a) {
-            guild = client.guilds.cache.get(config.guildId);
+            guild = client.guilds.cache.get(config.guild);
             removeOldReactions(guild, config);
             removeEmptyCalls(guild);
             controllerMessage = function (type) {

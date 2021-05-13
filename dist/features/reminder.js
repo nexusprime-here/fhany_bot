@@ -16,7 +16,7 @@ function execute(client, config) {
         var date = new Date();
         var reminders = db.get('reminders').value();
         reminders.forEach(function (reminder) {
-            var guild = client.guilds.cache.get(config.guildId);
+            var guild = client.guilds.cache.get(config.guild);
             var postChannel = guild === null || guild === void 0 ? void 0 : guild.channels.cache.get(config.reminder.postChannel);
             if (reminder.hours !== date.getHours())
                 return;

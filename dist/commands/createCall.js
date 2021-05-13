@@ -43,91 +43,103 @@ var database_1 = __importDefault(require("../database"));
 var commands_createCall_1 = __importDefault(require("../embeds/commands.createCall"));
 module.exports = {
     name: 'createcall',
-    description: '',
-    args: true,
-    usage: '<public/private> [Nome do canal]',
-    roles: ['779054882916925480'],
+    description: 'Cria um canal exclusivo para você, onde você pode mudar as permissões e desconectar outros membros.',
+    booster: true,
+    usage: '<publico/privado> [Nome do canal]',
     execute: execute
 };
 function execute(message, args) {
     var _a, _b;
-    var type = args[0], channelName = args.slice(1);
-    var userInDatabase = database_1.default.get('boostersThatCreatedCalls').find({ userId: message.author.id }).value();
-    if (channelName.join(' ').length > 20)
-        return message.channel.send(commands_createCall_1.default.nameVeryLarge);
-    if (!!userInDatabase)
-        return message.channel.send(commands_createCall_1.default.alreadyCreated);
-    var everyone = (_a = message.guild) === null || _a === void 0 ? void 0 : _a.roles.everyone.id;
-    if (type === 'public' || type === 'private') {
-        (_b = createChannelVoice(type)) === null || _b === void 0 ? void 0 : _b.then(function (channel) {
-            if (!channel)
-                return;
-            message.channel.send(commands_createCall_1.default.channelCreated(type === 'private', channel === null || channel === void 0 ? void 0 : channel.id));
-            waitForUsersToJoin(channel, message.author.id);
-        });
-    }
-    else {
-        message.channel.send(commands_createCall_1.default.typeNotExist);
-    }
-    function createChannelVoice(type) {
-        var _a;
-        return __awaiter(this, void 0, void 0, function () {
-            var channel;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        if (!everyone)
-                            return [2 /*return*/];
-                        return [4 /*yield*/, ((_a = message.guild) === null || _a === void 0 ? void 0 : _a.channels.create("\u2756 " + channelName.join(' '), {
-                                parent: '772812962854338564',
-                                type: 'voice',
-                                permissionOverwrites: type === 'public' ? [
-                                    {
-                                        id: everyone,
-                                        allow: ['VIEW_CHANNEL', 'CONNECT']
-                                    },
-                                    {
-                                        id: message.author.id,
-                                        allow: ['PRIORITY_SPEAKER', 'MOVE_MEMBERS', 'CREATE_INSTANT_INVITE']
-                                    }
-                                ] : [
-                                    {
-                                        id: everyone,
-                                        deny: ['VIEW_CHANNEL'],
-                                        allow: ['CONNECT']
-                                    },
-                                    {
-                                        id: message.author.id,
-                                        allow: ['VIEW_CHANNEL', 'PRIORITY_SPEAKER', 'MOVE_MEMBERS', 'CREATE_INSTANT_INVITE']
-                                    }
-                                ]
-                            }))];
-                    case 1:
-                        channel = _b.sent();
-                        !!channel && database_1.default.get('boostersThatCreatedCalls').push({ userId: message.author.id, channelId: channel.id }).write();
-                        return [2 /*return*/, channel];
-                }
-            });
-        });
-    }
-    function waitForUsersToJoin(channel, userId) {
-        var _this = this;
-        if (channel === undefined)
-            return;
-        return new Promise(function (terminated) { return setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
-            var usersInCall;
-            return __generator(this, function (_a) {
-                usersInCall = [];
-                channel.members.forEach(function (member) {
-                    usersInCall.push(member);
+    return __awaiter(this, void 0, void 0, function () {
+        function createChannelVoice(type) {
+            var _a;
+            return __awaiter(this, void 0, void 0, function () {
+                var moderator, channel;
+                return __generator(this, function (_b) {
+                    switch (_b.label) {
+                        case 0:
+                            if (!everyone)
+                                return [2 /*return*/];
+                            moderator = '748601213079126027';
+                            return [4 /*yield*/, ((_a = message.guild) === null || _a === void 0 ? void 0 : _a.channels.create("\u2756 " + channelName.join(' '), {
+                                    parent: '772812962854338564',
+                                    type: 'voice',
+                                    permissionOverwrites: type === 'publico' ? [
+                                        {
+                                            id: everyone,
+                                            allow: ['VIEW_CHANNEL', 'CONNECT']
+                                        },
+                                        {
+                                            id: message.author.id,
+                                            allow: ['PRIORITY_SPEAKER', 'MOVE_MEMBERS', 'CREATE_INSTANT_INVITE']
+                                        }
+                                    ] : [
+                                        {
+                                            id: everyone,
+                                            deny: ['VIEW_CHANNEL'],
+                                            allow: ['CONNECT']
+                                        },
+                                        {
+                                            id: message.author.id,
+                                            allow: ['VIEW_CHANNEL', 'PRIORITY_SPEAKER', 'MOVE_MEMBERS', 'CREATE_INSTANT_INVITE']
+                                        },
+                                        {
+                                            id: moderator,
+                                            allow: ['VIEW_CHANNEL', 'CONNECT']
+                                        }
+                                    ]
+                                }))];
+                        case 1:
+                            channel = _b.sent();
+                            !!channel && database_1.default.get('boostersThatCreatedCalls').push({ userId: message.author.id, channelId: channel.id }).write();
+                            return [2 /*return*/, channel];
+                    }
                 });
-                if (usersInCall.length < 1) {
-                    !channel.deleted && channel.delete();
-                    database_1.default.get('boostersThatCreatedCalls').remove({ userId: userId }).write();
-                    terminated(null);
-                }
-                return [2 /*return*/];
             });
-        }); }, 1000 * 15); });
-    }
+        }
+        function waitForUsersToJoin(channel, userId) {
+            var _this = this;
+            if (channel === undefined)
+                return;
+            return new Promise(function (terminated) { return setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+                var usersInCall;
+                return __generator(this, function (_a) {
+                    usersInCall = [];
+                    channel.members.forEach(function (member) {
+                        usersInCall.push(member);
+                    });
+                    if (usersInCall.length < 1) {
+                        !channel.deleted && channel.delete();
+                        database_1.default.get('boostersThatCreatedCalls').remove({ userId: userId }).write();
+                        terminated(null);
+                    }
+                    return [2 /*return*/];
+                });
+            }); }, 1000 * 15); });
+        }
+        var type, channelName, userInDatabase, everyone;
+        return __generator(this, function (_c) {
+            type = args[0], channelName = args.slice(1);
+            if (!type)
+                return [2 /*return*/, message.reply(commands_createCall_1.default.help)];
+            userInDatabase = database_1.default.get('boostersThatCreatedCalls').find({ userId: message.author.id }).value();
+            if (channelName.join(' ').length > 20)
+                return [2 /*return*/, message.channel.send(commands_createCall_1.default.nameVeryLarge)];
+            if (!!userInDatabase)
+                return [2 /*return*/, message.channel.send(commands_createCall_1.default.alreadyCreated)];
+            everyone = (_a = message.guild) === null || _a === void 0 ? void 0 : _a.roles.everyone.id;
+            if (type === 'publico' || type === 'privado') {
+                (_b = createChannelVoice(type)) === null || _b === void 0 ? void 0 : _b.then(function (channel) {
+                    if (!channel)
+                        return;
+                    message.channel.send(commands_createCall_1.default.channelCreated(type === 'privado', channel === null || channel === void 0 ? void 0 : channel.id));
+                    waitForUsersToJoin(channel, message.author.id);
+                });
+            }
+            else {
+                message.channel.send(commands_createCall_1.default.typeNotExist);
+            }
+            return [2 /*return*/];
+        });
+    });
 }

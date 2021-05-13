@@ -1,4 +1,5 @@
 import { Client, Guild, GuildMember, Message, User } from "discord.js";
+import { IConfig } from "..";
 
 import embed from '../embeds/features.fhanyPresenceDetector';
 
@@ -8,14 +9,14 @@ module.exports = {
     execute
 }
 
-function execute(client: Client, config: any) {
+function execute(client: Client, config: IConfig) {
     const fhanyActiveCache: number[] = []; // I used Array from detect if the Fhany is inactive more easy, if an array is empty, she is inactive
     const wrongMentionsCache: GuildMember[] = [];
     
     client.on('message', async message => {
         if(message.author.bot) return
-        if(!config.fhanyPresenceDetector.channelsId.includes(message.channel.id)) return;
-        if(message.author.id === config.fhanyPresenceDetector.fhanyId) {
+        if(!config.chats.includes(message.channel.id)) return;
+        if(message.author.id === config.fhanyPresenceDetector.fhany) {
             const fetchChannel = client.channels.cache.get(message.channel.id);
             
             const count = getLastNumber();
@@ -29,6 +30,12 @@ function execute(client: Client, config: any) {
             fhanyActiveCache.length === 0 && warnAllUsersOfFhanyOff(fetchChannel);
         } else {
             if(!await mentionTheFhany(message)) return;
+
+            const member = message.guild?.members.cache.get(message.author.id);
+            
+            if(!member) return;
+            if(!member.roles.cache.filter(role => config.staffers.includes(role.id))) return;
+
             
             fhanyActiveCache.length === 0 && deleteUserMessage(message);
         }
@@ -36,11 +43,11 @@ function execute(client: Client, config: any) {
         
         function mentionTheFhany(message: Message) {
             return new Promise<boolean>((terminated) => {
-                const fhany = client.guilds.cache.get(config.guildId)?.members.cache.get(config.fhanyPresenceDetector.fhanyId);
+                const fhany = client.guilds.cache.get(config.guild)?.members.cache.get(config.fhanyPresenceDetector.fhany);
                 if(!fhany) return;
                 
                 fhany.roles.cache.forEach(role => {
-                    message.mentions.users.has(config.fhanyPresenceDetector.fhanyId) && terminated(true);
+                    message.mentions.users.has(config.fhanyPresenceDetector.fhany) && terminated(true);
                     message.mentions.roles.has(role.id) && terminated(true);
                 });
                 terminated(false)
@@ -56,11 +63,11 @@ function execute(client: Client, config: any) {
             searchUserInCache(message.author).length === 2
                 && addSilenceRole(searchUserInCache(message.author)[0])
                 && message.reply(embed.mentionFhanyNotPermitted3(message))
-                && removeSilenceRole(searchUserInCache(message.author)[0]);
+                && removeSilenceRole(searchUserInCache(message.author)[0])
         
             message.delete();
         
-            const guild = client.guilds.cache.get(config.guildId);
+            const guild = client.guilds.cache.get(config.guild);
             const user = guild?.members.cache.get(message.author.id);
         
             !!user && wrongMentionsCache.push(user);
@@ -89,8 +96,8 @@ function execute(client: Client, config: any) {
     });
     
     client.on('typingStart', async (channel, user) => {
-        if(!config.fhanyPresenceDetector.channelsId.includes(channel.id)) return;
-        if(user.id !== config.fhanyPresenceDetector.fhanyId) return;
+        if(!config.chats.includes(channel.id)) return;
+        if(user.id !== config.fhanyPresenceDetector.fhany) return;
 
         const fetchChannel = client.channels.cache.get(channel.id);
         const count = getLastNumber();

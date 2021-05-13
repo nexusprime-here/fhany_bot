@@ -1,4 +1,5 @@
 import { Channel, Client, Guild, GuildMember, Message, MessageReaction, PartialUser, User, VoiceChannel } from "discord.js";
+import { IConfig } from "..";
 import database from '../database';
 
 const db: any = database; // error in types of lowdb
@@ -9,8 +10,8 @@ module.exports = {
     execute
 }
 
-async function execute(client: Client, config: any) {
-    const guild = client.guilds.cache.get(config.guildId);
+async function execute(client: Client, config: IConfig) {
+    const guild = client.guilds.cache.get(config.guild);
 
     removeOldReactions(guild, config);
     removeEmptyCalls(guild);
