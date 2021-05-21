@@ -21,6 +21,7 @@
   },
   "license": "Copyright © 2021 | Nícolas Estevão Lima",
   "dependencies": {
+    "auto-git-update": "^2.0.1",
     "discord.js": "^12.5.3",
     "express": "^4.17.1",
     "lowdb": "^1.0.0",

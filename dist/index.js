@@ -54,30 +54,28 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
+var __spreadArray = (this && this.__spreadArray) || function (to, from) {
+    for (var i = 0, il = from.length, j = to.length; i < il; i++, j++)
+        to[j] = from[i];
+    return to;
 };
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.client = void 0;
+exports.commands = exports.client = void 0;
 var discord_js_1 = __importDefault(require("discord.js"));
 var fs_1 = __importDefault(require("fs"));
 var configtest_json_1 = __importStar(require("./config/configtest.json"));
 var src_index_1 = __importDefault(require("./embeds/src.index"));
 exports.client = new discord_js_1.default.Client({ partials: ['REACTION'] });
-var commands = new discord_js_1.default.Collection();
+exports.commands = new discord_js_1.default.Collection();
 var commandFiles = fs_1.default.readdirSync('./dist/commands').filter(function (file) { return file.endsWith('.js'); });
 var eventFiles = fs_1.default.readdirSync('./dist/events').filter(function (file) { return file.endsWith('.js'); });
 for (var _i = 0, commandFiles_1 = commandFiles; _i < commandFiles_1.length; _i++) {
     var file = commandFiles_1[_i];
     var command = require("./commands/" + file);
-    commands.set(command.name, command);
+    exports.commands.set(command.name, command);
 }
 ;
 var _loop_1 = function (file) {
@@ -88,7 +86,7 @@ var _loop_1 = function (file) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return event_1.execute.apply(event_1, __spreadArrays(args, [exports.client]));
+            return event_1.execute.apply(event_1, __spreadArray(__spreadArray([], args), [exports.client]));
         });
     }
     else {
@@ -97,7 +95,7 @@ var _loop_1 = function (file) {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            return event_1.execute.apply(event_1, __spreadArrays(args, [exports.client]));
+            return event_1.execute.apply(event_1, __spreadArray(__spreadArray([], args), [exports.client]));
         });
     }
 };
@@ -138,13 +136,13 @@ exports.client.on('message', function (message) { return __awaiter(void 0, void 
         commandName = (_a = args.shift()) === null || _a === void 0 ? void 0 : _a.toLowerCase();
         if (!commandName)
             return [2 /*return*/];
-        command = commands.get(commandName);
+        command = exports.commands.get(commandName);
         if (!command)
             return [2 /*return*/];
         if (command.booster) {
             member = (_b = message.guild) === null || _b === void 0 ? void 0 : _b.members.cache.get(message.author.id);
             if (!(member === null || member === void 0 ? void 0 : member.roles.cache.has('779055195028062269')))
-                return [2 /*return*/, message.reply(src_index_1.default.notBooster)];
+                return [2 /*return*/, message.reply(src_index_1.default.notBooster)]; // mudar cargo
         }
         if (command.guildOnly && message.channel.type !== 'text') {
             return [2 /*return*/, message.reply(src_index_1.default.notDM)];

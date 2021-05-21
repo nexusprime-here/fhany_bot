@@ -30,15 +30,13 @@ function execute(client: Client, config: IConfig) {
             fhanyActiveCache.length === 0 && warnAllUsersOfFhanyOff(fetchChannel);
         } else {
             if(!await mentionTheFhany(message)) return;
-
             if(await isStaffer()) return;
-
             
             fhanyActiveCache.length === 0 && deleteUserMessage(message);
         }
         
-        
-
+    
+        /* Functions */
         function isStaffer() {
             const member = message.guild?.members.cache.get(message.author.id);
 
@@ -72,7 +70,7 @@ function execute(client: Client, config: IConfig) {
             searchUserInCache(message.author).length === 2
                 && addSilenceRole(searchUserInCache(message.author)[0])
                 && message.reply(embed.mentionFhanyNotPermitted3(message))
-                && removeSilenceRole(searchUserInCache(message.author)[0])
+                && removeSilenceRole(searchUserInCache(message.author)[0]);
         
             message.delete();
         
@@ -134,7 +132,7 @@ function execute(client: Client, config: IConfig) {
         if(fhanyActiveCache.length === 0) {
             return 1;
         } else {
-            const count = fhanyActiveCache[0]++; // I don't know why, but yhe code only worked if there was this line
+            const count = fhanyActiveCache[0]++; // I don't know why, but the code only worked if there was this line
             return fhanyActiveCache[0]++;
         };
     };

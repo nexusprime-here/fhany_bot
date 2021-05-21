@@ -6,7 +6,7 @@ import embed from '../embeds/commands.accept';
 const db: any = database
 
 module.exports = {
-    name: 'accept', 
+    name: 'aceitar', 
     description: 'Aceita uma sugestão do canal sugestões',
     async execute(message: Message, args: string[], client: Client, config: IConfig) {
         if(!await isStaff()) return deleteCommandMessage();

@@ -41,5 +41,8 @@ exports.default = {
     missingArg: new discord_js_1.MessageEmbed()
         .setTitle('❌ Whoops..')
         .setDescription('Você esqueceu de citar o título do lembrete que quer apagar, o jeito certo seria: `!reminder remove eita`')
-        .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>')
+        .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'),
+    help: function (prefix) { return new discord_js_1.MessageEmbed()
+        .setTitle('Lembrete')
+        .setDescription("Este comando pode criar ou apagar um lembrete. Ex: \n\n`" + prefix + "lembrete add` \n`" + prefix + "lembrete remove`"); }
 };

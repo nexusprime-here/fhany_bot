@@ -334,7 +334,7 @@ function waitForUsersToJoin(channel, userId, guild, lol) {
                                 _a.sent();
                                 lol === true && easterEgg(usersInCall, channel);
                                 if (usersInCall.length < 1) {
-                                    channel.delete();
+                                    !channel.deleted && channel.delete();
                                     db.get('usersThatCreatedCalls').remove({ userId: userId }).write();
                                     terminated();
                                 }

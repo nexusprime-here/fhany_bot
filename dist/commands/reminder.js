@@ -42,9 +42,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var database_1 = __importDefault(require("../database"));
 var commands_reminder_1 = __importDefault(require("../embeds/commands.reminder"));
 module.exports = {
-    name: 'reminder',
+    name: 'lembrete',
     description: 'Aceita uma sugestão do canal sugestões',
-    execute: function (message, args, client) {
+    execute: function (message, args, client, config) {
         return __awaiter(this, void 0, void 0, function () {
             function getTitle(message) {
                 return __awaiter(this, void 0, void 0, function () {
@@ -54,7 +54,7 @@ module.exports = {
                             case 0: return [4 /*yield*/, message.edit(commands_reminder_1.default.setTitle)];
                             case 1:
                                 _a.sent();
-                                return [4 /*yield*/, message.channel.awaitMessages(filter, config)];
+                                return [4 /*yield*/, message.channel.awaitMessages(filter, filterConfig)];
                             case 2:
                                 title = (_a.sent()).first();
                                 title === null || title === void 0 ? void 0 : title.delete();
@@ -76,7 +76,7 @@ module.exports = {
                             case 0: return [4 /*yield*/, message.edit(commands_reminder_1.default.setDescription(thisObject))];
                             case 1:
                                 _a.sent();
-                                return [4 /*yield*/, message.channel.awaitMessages(filter, config)];
+                                return [4 /*yield*/, message.channel.awaitMessages(filter, filterConfig)];
                             case 2:
                                 description = (_a.sent()).first();
                                 description === null || description === void 0 ? void 0 : description.delete();
@@ -98,7 +98,7 @@ module.exports = {
                             case 0: return [4 /*yield*/, message.edit(commands_reminder_1.default.repeatEveryDay(thisObject))];
                             case 1:
                                 _a.sent();
-                                return [4 /*yield*/, message.channel.awaitMessages(filter, config)];
+                                return [4 /*yield*/, message.channel.awaitMessages(filter, filterConfig)];
                             case 2:
                                 repeat = (_a.sent()).first();
                                 repeat === null || repeat === void 0 ? void 0 : repeat.delete();
@@ -120,7 +120,7 @@ module.exports = {
                             case 0: return [4 /*yield*/, message.edit(commands_reminder_1.default.setDate(thisObject))];
                             case 1:
                                 _a.sent();
-                                return [4 /*yield*/, message.channel.awaitMessages(filter, config)];
+                                return [4 /*yield*/, message.channel.awaitMessages(filter, filterConfig)];
                             case 2:
                                 date = (_a.sent()).first();
                                 date === null || date === void 0 ? void 0 : date.delete();
@@ -142,7 +142,7 @@ module.exports = {
                             case 0: return [4 /*yield*/, message.edit(commands_reminder_1.default.setMonth(thisObject))];
                             case 1:
                                 _a.sent();
-                                return [4 /*yield*/, message.channel.awaitMessages(filter, config)];
+                                return [4 /*yield*/, message.channel.awaitMessages(filter, filterConfig)];
                             case 2:
                                 month = (_a.sent()).first();
                                 month === null || month === void 0 ? void 0 : month.delete();
@@ -164,7 +164,7 @@ module.exports = {
                             case 0: return [4 /*yield*/, message.edit(commands_reminder_1.default.setYear(thisObject))];
                             case 1:
                                 _a.sent();
-                                return [4 /*yield*/, message.channel.awaitMessages(filter, config)];
+                                return [4 /*yield*/, message.channel.awaitMessages(filter, filterConfig)];
                             case 2:
                                 year = (_a.sent()).first();
                                 year === null || year === void 0 ? void 0 : year.delete();
@@ -186,7 +186,7 @@ module.exports = {
                             case 0: return [4 /*yield*/, message.edit(commands_reminder_1.default.setHours(thisObject))];
                             case 1:
                                 _a.sent();
-                                return [4 /*yield*/, message.channel.awaitMessages(filter, config)];
+                                return [4 /*yield*/, message.channel.awaitMessages(filter, filterConfig)];
                             case 2:
                                 hours = (_a.sent()).first();
                                 hours === null || hours === void 0 ? void 0 : hours.delete();
@@ -208,7 +208,7 @@ module.exports = {
                             case 0: return [4 /*yield*/, message.edit(commands_reminder_1.default.setMinutes(thisObject))];
                             case 1:
                                 _a.sent();
-                                return [4 /*yield*/, message.channel.awaitMessages(filter, config)];
+                                return [4 /*yield*/, message.channel.awaitMessages(filter, filterConfig)];
                             case 2:
                                 minutes = (_a.sent()).first();
                                 minutes === null || minutes === void 0 ? void 0 : minutes.delete();
@@ -230,7 +230,7 @@ module.exports = {
                             case 0: return [4 /*yield*/, message.edit(commands_reminder_1.default.addMentions(thisObject))];
                             case 1:
                                 _a.sent();
-                                return [4 /*yield*/, message.channel.awaitMessages(filter, config)];
+                                return [4 /*yield*/, message.channel.awaitMessages(filter, filterConfig)];
                             case 2:
                                 mentions = (_a.sent()).first();
                                 mentions === null || mentions === void 0 ? void 0 : mentions.delete();
@@ -239,12 +239,14 @@ module.exports = {
                     });
                 });
             }
-            var arg, acceptedArgs, filter, config;
+            var arg, acceptedArgs, filter, filterConfig;
             var _this = this;
             return __generator(this, function (_a) {
                 arg = args[0];
+                if (arg === undefined)
+                    return [2 /*return*/, message.reply(commands_reminder_1.default.help(config.prefix))];
                 acceptedArgs = {
-                    'add': function () { return __awaiter(_this, void 0, void 0, function () {
+                    'adicionar': function () { return __awaiter(_this, void 0, void 0, function () {
                         var newMessage, allReminderData, title, description, repeatEveryDay, date, month, year, hours, minutes, mentions, _a;
                         return __generator(this, function (_b) {
                             switch (_b.label) {
@@ -320,11 +322,11 @@ module.exports = {
                             }
                         });
                     }); },
-                    'remove': function () { }
+                    'remover': function () { }
                 };
                 !!acceptedArgs[arg] && acceptedArgs[arg]();
                 filter = function (m) { return m.author.id === message.author.id; };
-                config = { max: 1, time: 1000 * 20, errors: ['time'] };
+                filterConfig = { max: 1, time: 1000 * 20, errors: ['time'] };
                 return [2 /*return*/];
             });
         });

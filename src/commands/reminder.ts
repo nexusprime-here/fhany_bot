@@ -1,18 +1,19 @@
 import { Client, Message } from "discord.js";
+import { IConfig } from "..";
 import db from '../database';
 
 import embed from "../embeds/commands.reminder";
 
 module.exports = {
-    name: 'reminder', 
+    name: 'lembrete', 
     description: 'Aceita uma sugestão do canal sugestões',
-    async execute(message: Message, args: any[], client: Client) {
-        const arg: 'add' | 'remove' = args[0]
+    async execute(message: Message, args: any[], client: Client, config: IConfig) {
+        const arg: 'adicionar' | 'remover' = args[0]
 
-        // if(arg === undefined) return message.reply(embed.help)
+        if(arg === undefined) return message.reply(embed.help(config.prefix))
 
         const acceptedArgs = {
-            'add': async () => {
+            'adicionar': async () => {
                 const newMessage = await message.channel.send({ embed: { description: 'Carregando...' } });
                 if(!newMessage) return;
                 
@@ -59,7 +60,7 @@ module.exports = {
 
                 newMessage.edit(embed.sucess('add'));
             },
-            'remove': () => {}
+            'remover': () => {}
         };
 
         !!acceptedArgs[arg] && acceptedArgs[arg]();
@@ -67,11 +68,11 @@ module.exports = {
         
         /* Functions */
         const filter = (m: Message) => m.author.id === message.author.id;
-        const config = { max: 1, time: 1000 * 20, errors: ['time'] }
+        const filterConfig = { max: 1, time: 1000 * 20, errors: ['time'] }
 
         async function getTitle(message: Message) {
             await message.edit(embed.setTitle);
-            let title = (await message.channel.awaitMessages(filter, config)).first(); // bug
+            let title = (await message.channel.awaitMessages(filter, filterConfig)).first(); // bug
             title?.delete();
 
             if(title && title.content.length > 50) {
@@ -84,7 +85,7 @@ module.exports = {
         }
         async function getDescription(message: Message, thisObject: IReminder) {
             await message.edit(embed.setDescription(thisObject));
-            let description = (await message.channel.awaitMessages(filter, config)).first();
+            let description = (await message.channel.awaitMessages(filter, filterConfig)).first();
             description?.delete();
 
             if(description && description.content.length > 1700) {
@@ -97,7 +98,7 @@ module.exports = {
         }
         async function getRepeat(message: Message, thisObject: IReminder) {
             await message.edit(embed.repeatEveryDay(thisObject));
-            let repeat = (await message.channel.awaitMessages(filter, config)).first();
+            let repeat = (await message.channel.awaitMessages(filter, filterConfig)).first();
             repeat?.delete();
 
             if(repeat && repeat.content.toLowerCase() !== 'y' && repeat.content.toLowerCase() !== 'n') {
@@ -110,7 +111,7 @@ module.exports = {
         }
         async function getDate(message: Message, thisObject: IReminder) {
             await message.edit(embed.setDate(thisObject));
-            let date = (await message.channel.awaitMessages(filter, config)).first();
+            let date = (await message.channel.awaitMessages(filter, filterConfig)).first();
             date?.delete();
 
             if(date && (parseInt(date.content) > 31 || parseInt(date.content) < 1)) {
@@ -123,7 +124,7 @@ module.exports = {
         }
         async function getMonth(message: Message, thisObject: IReminder) {
             await message.edit(embed.setMonth(thisObject));
-            let month = (await message.channel.awaitMessages(filter, config)).first();
+            let month = (await message.channel.awaitMessages(filter, filterConfig)).first();
             month?.delete();
 
             if(month && (parseInt(month.content) > 31 || parseInt(month.content) < 1)) {
@@ -136,7 +137,7 @@ module.exports = {
         }
         async function getYear(message: Message, thisObject: IReminder) {
             await message.edit(embed.setYear(thisObject));
-            let year = (await message.channel.awaitMessages(filter, config)).first();
+            let year = (await message.channel.awaitMessages(filter, filterConfig)).first();
             year?.delete();
 
             if(year && parseInt(year.content) < new Date().getFullYear()) {
@@ -149,7 +150,7 @@ module.exports = {
         }
         async function getHours(message: Message, thisObject: IReminder) {
             await message.edit(embed.setHours(thisObject));
-            let hours = (await message.channel.awaitMessages(filter, config)).first();
+            let hours = (await message.channel.awaitMessages(filter, filterConfig)).first();
             hours?.delete();
 
             if(hours && (parseInt(hours.content) > 23 || parseInt(hours.content) < 0)) {
@@ -162,7 +163,7 @@ module.exports = {
         }
         async function getMinutes(message: Message, thisObject: IReminder) {
             await message.edit(embed.setMinutes(thisObject));
-            let minutes = (await message.channel.awaitMessages(filter, config)).first();
+            let minutes = (await message.channel.awaitMessages(filter, filterConfig)).first();
             minutes?.delete();
 
             if(minutes && (parseInt(minutes.content) > 59 || parseInt(minutes.content) < 0)) {
@@ -175,7 +176,7 @@ module.exports = {
         }
         async function getMentions(message: Message, thisObject: IReminder) {
             await message.edit(embed.addMentions(thisObject));
-            let mentions = (await message.channel.awaitMessages(filter, config)).first();
+            let mentions = (await message.channel.awaitMessages(filter, filterConfig)).first();
             mentions?.delete();
 
             return mentions ? mentions.content : ''; 

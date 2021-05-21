@@ -43,7 +43,7 @@ var database_1 = __importDefault(require("../database"));
 var commands_accept_1 = __importDefault(require("../embeds/commands.accept"));
 var db = database_1.default;
 module.exports = {
-    name: 'accept',
+    name: 'aceitar',
     description: 'Aceita uma sugestão do canal sugestões',
     execute: function (message, args, client, config) {
         var _a;

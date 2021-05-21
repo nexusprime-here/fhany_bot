@@ -1,4 +1,5 @@
 const express = require('express');
+
 const app = express();
 
 app.get('/', (req, res) => {
@@ -10,4 +11,5 @@ app.get('/', (req, res) => {
 
 app.listen(process.env.PORT)
 
+require('./autoUpdater');
 require('./dist/index');

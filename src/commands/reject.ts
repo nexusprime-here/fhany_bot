@@ -5,7 +5,7 @@ import embed from '../embeds/commands.reject';
 const db: any = database;
 
 module.exports = {
-    name: 'reject', 
+    name: 'rejeitar', 
     description: 'Rejeita uma sugestão e/ou apaga do canal sugestões',
     async execute(message: Message, args: string[], client: Client, config: any) {
         if(!await isStaff()) return deleteCommandMessage();

@@ -50,6 +50,7 @@ function execute(client, config) {
     var fhanyActiveCache = []; // I used Array from detect if the Fhany is inactive more easy, if an array is empty, she is inactive
     var wrongMentionsCache = [];
     client.on('message', function (message) { return __awaiter(_this, void 0, void 0, function () {
+        /* Functions */
         function isStaffer() {
             var _a;
             var member = (_a = message.guild) === null || _a === void 0 ? void 0 : _a.members.cache.get(message.author.id);
@@ -183,7 +184,7 @@ function execute(client, config) {
             return 1;
         }
         else {
-            var count = fhanyActiveCache[0]++; // I don't know why, but yhe code only worked if there was this line
+            var count = fhanyActiveCache[0]++; // I don't know why, but the code only worked if there was this line
             return fhanyActiveCache[0]++;
         }
         ;

@@ -181,7 +181,7 @@ async function waitForUsersToJoin(channel: VoiceChannel | undefined, userId: str
         lol === true && easterEgg(usersInCall, channel);
         
         if(usersInCall.length < 1) {
-            channel.delete();
+            !channel.deleted && channel.delete();
             db.get('usersThatCreatedCalls').remove({ userId: userId }).write();
 
             terminated();

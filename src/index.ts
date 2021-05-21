@@ -6,7 +6,7 @@ import embed from './embeds/src.index';
 
 export const client = new Discord.Client({ partials: ['REACTION'] });
 
-const commands: Commands = new Discord.Collection();
+export const commands: Commands = new Discord.Collection();
 
 const commandFiles = fs.readdirSync('./dist/commands').filter((file: string) => file.endsWith('.js'));
 const eventFiles = fs.readdirSync('./dist/events').filter(file => file.endsWith('.js'));
@@ -65,7 +65,7 @@ client.on('message', async message => {
 	if(command.booster) {
 		const member = message.guild?.members.cache.get(message.author.id);
 
-		if(!member?.roles.cache.has('779055195028062269')) return message.reply(embed.notBooster)
+		if(!member?.roles.cache.has('779055195028062269')) return message.reply(embed.notBooster) // mudar cargo
 	}
 	if (command.guildOnly && message.channel.type !== 'text') {
 		return message.reply(embed.notDM);
@@ -133,7 +133,7 @@ client.login(token);
 
 
 /* Types */
-type Commands = Map<string, {
+export type Commands = Map<string, {
 	name: string,
 	description: string,
 	args?: boolean,

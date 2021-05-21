@@ -43,7 +43,7 @@ var database_1 = __importDefault(require("../database"));
 var commands_reject_1 = __importDefault(require("../embeds/commands.reject"));
 var db = database_1.default;
 module.exports = {
-    name: 'reject',
+    name: 'rejeitar',
     description: 'Rejeita uma sugestão e/ou apaga do canal sugestões',
     execute: function (message, args, client, config) {
         var _a;

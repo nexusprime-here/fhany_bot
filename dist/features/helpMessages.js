@@ -7,7 +7,7 @@ module.exports = {
 };
 function execute(client, config) {
     var allMessages = [
-        "Voc\u00EA sabia que caso ache injusto alguma puni\u00E7\u00E3o sua, voc\u00EA pode constatar a staff no <#835612037954273300> e reclamar.",
+        "Voc\u00EA sabia que caso ache injusto alguma puni\u00E7\u00E3o sua, voc\u00EA pode constatar a staff no <#835612037954273300> e reclamar?",
         "Seja booster agora! Quer saber as vantagens? Visite <#797930500231790633>.",
         'Não mande links aqui!',
         'Não tente enviar gifs, vídeos ou imagens aqui se você não for booster!',
@@ -15,7 +15,8 @@ function execute(client, config) {
         'Não marque a fhany caso ela não esteja ativa no chat, eu avisarei se ela estiver.',
         "Se voc\u00EA ver algum membro fazendo algo que v\u00E1 contra as <#745049777791565915>, Denuncie no canal <#745062559500992512>.",
         "Temos cineminhas todos os s\u00E1bados, caso queira ser notificado dos nossos filmes, v\u00E1 no <#750621518328758414> e ative o cargo \"avisos de eventos\".",
-        "Voc\u00EA pode adicionar cargos sobre seu g\u00EAnero, sexualidade e idade no <#750621518328758414>."
+        "Voc\u00EA pode adicionar cargos sobre seu g\u00EAnero, sexualidade e idade no <#750621518328758414>.",
+        'Ei, você poderia nos avaliar? Vá até o <#842394568284307456> para fazer isso. É muito importante para nós.. 👉👈'
     ];
     var messagesCache = [];
     client.on('message', function (message) {
