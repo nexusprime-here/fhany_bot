@@ -1,4 +1,16 @@
 const express = require('express');
+const AutoGitUpdate = require('auto-git-update');
+const cp = require('child_process');
+
+const config = {
+	repository: 'https://github.com/XNexusPrimeX/fhany_bot',
+	token: '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',
+	tempLocation: __dirname + '/temp',
+	executeOnComplete: 'node index.js',
+	exitOnComplete: true
+}
+
+const updater = new AutoGitUpdate(config);
 
 const app = express();
 
@@ -9,7 +21,8 @@ app.get('/', (req, res) => {
 	res.sendStatus(200)
 })
 
-app.listen(process.env.PORT)
+app.listen(process.env.PORT);
 
-require('./autoUpdater');
+cp.exec('npx tsc')
 require('./dist/index');
+setInterval(async () => await updater.autoUpdate(), 1000 * 60);
