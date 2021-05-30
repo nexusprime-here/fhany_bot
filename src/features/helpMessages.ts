@@ -1,4 +1,4 @@
-import { Client, Message } from "discord.js";
+import { Client, Message, MessageEmbed } from "discord.js";
 import { IConfig } from "..";
 
 module.exports = {
@@ -16,7 +16,7 @@ function execute(client: Client, config: IConfig) {
         `Temos o <#811768172079218729> para spawnar canais de voz para você encontrar parceiros para jogos!`,
         'Não marque a fhany caso ela não esteja ativa no chat, eu avisarei se ela estiver.',
         `Se você ver algum membro fazendo algo que vá contra as <#745049777791565915>, Denuncie no canal <#745062559500992512>.`, 
-        `Temos cineminhas todos os sábados, caso queira ser notificado dos nossos filmes, vá no <#750621518328758414> e ative o cargo "avisos de eventos".`,
+        `Temos cineminhas todos os sábados..".`,
         `Você pode adicionar cargos sobre seu gênero, sexualidade e idade no <#750621518328758414>.`,
         'Ei, você poderia nos avaliar? Vá até o <#842394568284307456> para fazer isso. É muito importante para nós.. 👉👈'
     ];
@@ -29,7 +29,13 @@ function execute(client: Client, config: IConfig) {
         messagesCache.push(message.content);
         if(messagesCache.length <= 30) return;
         
-        message.channel.send(`Dica: ${allMessages[Math.floor(Math.random() * allMessages.length)]}`);
+        const embed = new MessageEmbed()
+            .setTitle('Dica')
+            .setDescription(allMessages[Math.floor(Math.random() * allMessages.length)])
+            .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>')
+            .setColor('#F55EB3')
+
+        message.channel.send(embed);
         messagesCache.length = 0;
     });
 

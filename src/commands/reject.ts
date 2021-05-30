@@ -7,6 +7,7 @@ const db: any = database;
 module.exports = {
     name: 'rejeitar', 
     description: 'Rejeita uma sugestão e/ou apaga do canal sugestões',
+    guildOnly: true,
     async execute(message: Message, args: string[], client: Client, config: any) {
         if(!await isStaff()) return deleteCommandMessage();
         if(!message.reference) return sendErrorMessageAndRemoveCommandMessage();

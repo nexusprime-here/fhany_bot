@@ -23,6 +23,9 @@ app.get('/', (req, res) => {
 
 app.listen(process.env.PORT);
 
-cp.exec('npx tsc')
-require('./dist/index');
+cp.exec('tsc', (err, stdout, stderr) => {
+	if(err) throw err && process.exit(0);
+
+	require('./dist/index')
+})
 setInterval(async () => await updater.autoUpdate(), 1000 * 60);

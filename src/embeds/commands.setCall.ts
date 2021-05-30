@@ -16,7 +16,7 @@ export default {
 
     sucessMessage: (userId: string, permission: string, boolean: boolean) => new MessageEmbed()
         .setTitle('✅ Sucesso!')
-        .setDescription(`O usuário <@${userId}> teve uma a permissão \`${permission}\` mudado para o estado \`${boolean}\` com sucesso!`)
+        .setDescription(`O usuário <@${userId}> teve a permissão \`${permission}\` mudado para o estado \`${boolean}\` com sucesso!`)
         .setColor('#00FF00')
         .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'),
         

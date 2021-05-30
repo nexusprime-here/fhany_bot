@@ -1,4 +1,3 @@
-console.log('foii')
 import Discord, { Client, Message, MessageEmbed } from 'discord.js';
 import fs from 'fs';
 
@@ -183,5 +182,3 @@ export type IConfig = {
 		postChannel: string
 	}
 }
-
-//foi
