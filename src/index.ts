@@ -1,7 +1,7 @@
 import Discord, { Client, Message, MessageEmbed } from 'discord.js';
 import fs from 'fs';
 
-import config, { token, prefix } from './config/config.json';
+import config, { token, prefix } from './config/configtest.json';
 import embed from './embeds/src.index';
 
 export const client = new Discord.Client({ partials: ['REACTION'] });
