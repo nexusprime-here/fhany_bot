@@ -27,7 +27,7 @@ function execute(client: Client, config: IConfig) {
         if(!config.chats.includes(message.channel.id)) return;
         
         messagesCache.push(message.content);
-        if(messagesCache.length <= 30) return;
+        if(messagesCache.length <= 60) return;
         
         const embed = new MessageEmbed()
             .setTitle('Dica')

@@ -1,7 +1,7 @@
 import Discord, { Client, Message, MessageEmbed } from 'discord.js';
 import fs from 'fs';
 
-import config, { token, prefix } from './config/configtest.json';
+import config, { token, prefix } from './config/config.json';
 import embed from './embeds/src.index';
 
 export const client = new Discord.Client({ partials: ['REACTION'] });
@@ -65,7 +65,7 @@ client.on('message', async message => {
 	if(command.booster) {
 		const member = message.guild?.members.cache.get(message.author.id);
 
-		if(!member?.roles.cache.has('779055195028062269')) return message.reply(embed.notBooster) // mudar cargo
+		if(!member?.roles.cache.has('750451871084445788')) return message.reply(embed.notBooster) // mudar cargo
 	}
 	if (command.guildOnly && message.channel.type !== 'text') {
 		return message.reply(embed.notDM);
