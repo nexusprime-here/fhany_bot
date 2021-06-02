@@ -1,5 +1,6 @@
 const app = require('express')();
 const AutoGitUpdate = require('auto-git-update');
+const { exec } = require('child_process');
 
 app.get('/', (req, res) => {
 	const date = new Date();
@@ -12,12 +13,32 @@ const config = {
 	repository: 'https://github.com/XNexusPrimeX/fhany_bot',
 	token: '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',
 	tempLocation: __dirname + '/temp',		
-	executeOnComplete: 'tsc && node index.js',
-	exitOnComplete: true
 }
 const updater = new AutoGitUpdate(config);
+
+updater.setLogConfig({
+	logDebug: false,
+	logDetail: false
+})
     
 setImmediate(async () => require('./dist/index'));
-setInterval(async () => await updater.autoUpdate(), 1000 * 20);
+setInterval(async () => {
+	const notUpdated = (await updater.compareVersions()).upToDate;
+	await updater.autoUpdate()
+
+	if(notUpdated) return
+
+	exec('npx tsc', (error) => {
+		if(error) return console.log(error);
+
+		requireUncached('./dist/index');
+	});
+}, 1000 * 60 * 2);
 
 app.listen(process.env.PORT);
+
+
+function requireUncached(module) {
+    delete require.cache[require.resolve(module)];
+    return require(module);
+}
