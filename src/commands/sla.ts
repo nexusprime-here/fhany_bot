@@ -4,6 +4,6 @@ module.exports = {
   name: 'oi',
   description: '',
   execute(message: Message) {
-    message.reply('foii')
+    message.reply('FOI CACETA')
   }
 }
