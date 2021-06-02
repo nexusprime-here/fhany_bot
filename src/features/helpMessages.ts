@@ -22,18 +22,27 @@ function execute(client: Client, config: IConfig) {
     ];
 
     const messagesCache: string[] = [];
+    let selectedMessages: string[] = [ ...allMessages];
 
     client.on('message', message => {
         if(!config.chats.includes(message.channel.id)) return;
         
         messagesCache.push(message.content);
-        if(messagesCache.length <= 60) return;
-        
+        if(messagesCache.length <= 80) return; 
+
+        const selected = selectedMessages[Math.floor(Math.random() * selectedMessages.length)];
+        selectedMessages.splice(selectedMessages.indexOf(selected), 1);
+
+
+        if(selectedMessages.length === 0) {
+            selectedMessages = [...allMessages]
+        }
+
         const embed = new MessageEmbed()
             .setTitle('Dica')
-            .setDescription(allMessages[Math.floor(Math.random() * allMessages.length)])
+            .setDescription(selected)
             .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>')
-            .setColor('#F55EB3')
+            .setColor('#F55EB3');
 
         message.channel.send(embed);
         messagesCache.length = 0;

@@ -1,12 +1,10 @@
 import Discord, { Client, Message, MessageEmbed } from 'discord.js';
 import fs from 'fs';
 
-import config, { prefix } from './config/configtest.json';
+import config, { prefix } from './config/config.json';
 export const token = config.token;
 import embed from './embeds/src.index';
-import { PromiseSync } from './utils';
 
-export const awaitClient = PromiseSync()
 export const client = new Discord.Client({ partials: ['REACTION'] });
 
 export const commands: Commands = new Discord.Collection();
@@ -32,8 +30,6 @@ const cooldowns: Cooldowns = new Discord.Collection();
 client.on('ready', async () => {
 	startFeatures(client)
 
-	awaitClient.resolve(client);
-
 	console.log('O bot foi iniciado com sucesso!');
 });
 
@@ -54,7 +50,6 @@ function startFeatures(client: Client) {
 };
 
 
-
 client.on('message', async message => {
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
@@ -70,7 +65,8 @@ client.on('message', async message => {
 	if(command.booster) {
 		const member = message.guild?.members.cache.get(message.author.id);
 
-		if(!member?.roles.cache.has('750451871084445788')) return message.reply(embed.notBooster) // mudar cargo
+		if(!member?.roles.cache.has('750451871084445788') || !member?.roles.cache.has('750137067438342224')) 
+			return message.reply(embed.notBooster)
 	}
 	if (command.guildOnly && message.channel.type !== 'text') {
 		return message.reply(embed.notDM);
