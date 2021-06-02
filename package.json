@@ -6,6 +6,7 @@
   "scripts": {
     "test": "tsc && node ."
   },
+  "type": "commonjs",
   "repository": {
     "url": "https://github.com/XNexusPrimeX/fhany_bot"
   },
