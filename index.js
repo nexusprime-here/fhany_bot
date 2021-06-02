@@ -1,5 +1,4 @@
 const app = require('express')();
-const cp = require('child_process');
 const restart = require('./restart');
 
 app.get('/', (req, res) => {
@@ -18,8 +17,7 @@ const config = {
 	exitOnComplete: false
 }
 
-let oldClient;
-setImmediate(async () => oldClient = await require('./dist/index').awaitClient.value);
-setInterval(async () => oldClient = await restart(config, oldClient), 1000 * 5);
+setImmediate(async () => require('./dist/index'));
+setInterval(async () => await restart(config), 1000 * 10);
 
 app.listen(process.env.PORT);

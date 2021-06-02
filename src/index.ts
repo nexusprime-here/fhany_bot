@@ -1,7 +1,8 @@
 import Discord, { Client, Message, MessageEmbed } from 'discord.js';
 import fs from 'fs';
 
-import config, { token, prefix } from './config/configtest.json';
+import config, { prefix } from './config/configtest.json';
+export const token = config.token;
 import embed from './embeds/src.index';
 import { PromiseSync } from './utils';
 
@@ -28,7 +29,7 @@ for (const file of eventFiles) {
 
 const cooldowns: Cooldowns = new Discord.Collection();
 
-client.once('ready', async () => {
+client.on('ready', async () => {
 	startFeatures(client)
 
 	awaitClient.resolve(client);
