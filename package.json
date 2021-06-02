@@ -1,6 +1,6 @@
 {
   "name": "fhany_bot",
-  "version": "8.0.2",
+  "version": "8.0.1",
   "description": "Este é um bot de discord que fiz para a Fhany, uma youtuber. Feito com muito carinho <3.",
   "main": "dist/index.js",
   "scripts": {

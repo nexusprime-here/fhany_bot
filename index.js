@@ -1,5 +1,5 @@
 const app = require('express')();
-const restart = require('./restart');
+const AutoGitUpdate = require('auto-git-update');
 
 app.get('/', (req, res) => {
 	const date = new Date();
@@ -8,16 +8,16 @@ app.get('/', (req, res) => {
 	res.sendStatus(200)
 })
 
-
 const config = {
 	repository: 'https://github.com/XNexusPrimeX/fhany_bot',
 	token: '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',
 	tempLocation: __dirname + '/temp',		
-	executeOnComplete: 'node restart.js',
-	exitOnComplete: false
+	executeOnComplete: 'tsc && node index.js',
+	exitOnComplete: true
 }
-
+const updater = new AutoGitUpdate(config);
+    
 setImmediate(async () => require('./dist/index'));
-setInterval(async () => await restart(config), 1000 * 10);
+setInterval(async () => await updater.autoUpdate(), 1000 * 20);
 
 app.listen(process.env.PORT);
