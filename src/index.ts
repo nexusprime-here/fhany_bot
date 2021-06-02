@@ -3,7 +3,9 @@ import fs from 'fs';
 
 import config, { token, prefix } from './config/configtest.json';
 import embed from './embeds/src.index';
+import { PromiseSync } from './utils';
 
+export const awaitClient = PromiseSync()
 export const client = new Discord.Client({ partials: ['REACTION'] });
 
 export const commands: Commands = new Discord.Collection();
@@ -28,6 +30,8 @@ const cooldowns: Cooldowns = new Discord.Collection();
 
 client.once('ready', async () => {
 	startFeatures(client)
+
+	awaitClient.resolve(client);
 
 	console.log('O bot foi iniciado com sucesso!');
 });

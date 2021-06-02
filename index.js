@@ -19,7 +19,7 @@ const config = {
 }
 
 let oldClient;
-setImmediate(() => oldClient = require('./dist/index').client);
-setInterval(async () => oldClient = await restart(config, oldClient), 1000 * 60);
+setImmediate(async () => oldClient = await require('./dist/index').awaitClient.value);
+setInterval(async () => oldClient = await restart(config, oldClient), 1000 * 5);
 
 app.listen(process.env.PORT);
