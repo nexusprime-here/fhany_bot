@@ -28,8 +28,9 @@ setInterval(async () => {
 
 	if(notUpdated) return
 
-	exec('npx tsc', (error) => {
+	exec('npx tsc', (error, _, sterr) => {
 		if(error) return console.log(error);
+		if(sterr) return console.log(sterr);
 
 		requireUncached('./dist/index');
 	});
