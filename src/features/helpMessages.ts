@@ -28,14 +28,14 @@ function execute(client: Client, config: IConfig) {
         if(!config.chats.includes(message.channel.id)) return;
         
         messagesCache.push(message.content);
-        if(messagesCache.length <= 80) return; 
+        if(messagesCache.length <=  100) return;
 
         const selected = selectedMessages[Math.floor(Math.random() * selectedMessages.length)];
         selectedMessages.splice(selectedMessages.indexOf(selected), 1);
 
 
         if(selectedMessages.length === 0) {
-            selectedMessages = [...allMessages]
+            selectedMessages = [...allMessages];
         }
 
         const embed = new MessageEmbed()

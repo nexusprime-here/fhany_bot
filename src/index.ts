@@ -1,7 +1,7 @@
 import Discord, { Client, Message, MessageEmbed } from 'discord.js';
 import fs from 'fs';
 
-import config, { prefix } from './config/config.json';
+import config, { prefix } from './config/configtest.json';
 export const token = config.token;
 import embed from './embeds/src.index';
 
@@ -65,8 +65,20 @@ client.on('message', async message => {
 	if(command.booster) {
 		const member = message.guild?.members.cache.get(message.author.id);
 
-		if(!member?.roles.cache.has('750451871084445788') || !member?.roles.cache.has('750137067438342224')) 
-			return message.reply(embed.notBooster)
+		if(!hasPermission(config.boosterRoles)) 
+			return message.reply(embed.notBooster) 
+
+
+		function hasPermission(permittedRoles: string[]) {
+			let result: boolean = false;
+			member?.roles.cache.forEach(role => {
+				permittedRoles.forEach(role2 => {
+					role.id === role2 && (result = true);
+				})
+			});
+
+			return result;
+		}
 	}
 	if (command.guildOnly && message.channel.type !== 'text') {
 		return message.reply(embed.notDM);
@@ -161,6 +173,8 @@ export type IConfig = {
 			silence: string
 		},
 	},
+	boosterRoles: string[],
+
 	temporaryCalls: {
 		normal: {
 			controllerChannel: string,
