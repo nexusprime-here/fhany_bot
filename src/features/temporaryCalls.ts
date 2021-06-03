@@ -1,4 +1,4 @@
-import { Channel, Client, Guild, GuildMember, Message, MessageReaction, PartialUser, User, VoiceChannel } from "discord.js";
+import { Channel, Client, Guild, GuildMember, MessageReaction, PartialUser, User, VoiceChannel } from "discord.js";
 import { IConfig } from "..";
 import database from '../database';
 

@@ -44,7 +44,7 @@ async function execute(this: { name: string }, message: Message, args: string[],
         const moderator = '748601213079126027'
 
         const channel = await message.guild?.channels.create(`❖ ${channelName.join(' ')}`, {
-            parent: '772812962854338564',
+            parent: config.booster.category,
             type: 'voice',
             permissionOverwrites: type === 'publico' ? [
                 { 

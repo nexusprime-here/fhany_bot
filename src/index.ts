@@ -65,7 +65,7 @@ client.on('message', async message => {
 	if(command.booster) {
 		const member = message.guild?.members.cache.get(message.author.id);
 
-		if(!hasPermission(config.boosterRoles)) 
+		if(!hasPermission(config.booster.roles)) 
 			return message.reply(embed.notBooster) 
 
 
@@ -173,7 +173,11 @@ export type IConfig = {
 			silence: string
 		},
 	},
-	boosterRoles: string[],
+
+	booster: {
+		roles: string[],
+		category: string
+	}
 
 	temporaryCalls: {
 		normal: {
