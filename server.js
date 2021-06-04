@@ -16,9 +16,9 @@ const config = {
 }
 const updater = new AutoGitUpdate(config);
 
-updater.setLogConfig({ logDebug: false, logDetail: false });
+updater.setLogConfig({ logDebug: false, logDetail: false, logError: true });
     
-setImmediate(async () => require('./dist/index'));
+setImmediate(() => require('./dist/index'));
 setInterval(async () => {
 	const notUpdated = (await updater.compareVersions()).upToDate;
 	await updater.autoUpdate()

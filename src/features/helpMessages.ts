@@ -19,6 +19,12 @@ function execute(client: Client, config: IConfig) {
         `Temos cineminhas todos os sábados..".`,
         `Você pode adicionar cargos sobre seu gênero, sexualidade e idade no <#750621518328758414>.`,
         'Ei, você poderia nos avaliar? Vá até o <#842394568284307456> para fazer isso. É muito importante para nós.. 👉👈',
+        'Não mande textos repetidos!',
+        'NÃO GRITE DEMAIS!!',
+        'PAREM de me marcar para me xingar, isto me chateia >:(',
+        'Você já viu o twitter da fhany? NÃO??! Ah, [Entra aqui](https://twitter.com/Fhany_yt)...',
+        'Para ver todos os cargos disponíveis no server e suas funções, visite <#781341316420075530>',
+        'Tem uma sugestão para o server? Deixe seu comentário no <#812513954727067728>',
         ':3',
     ];
 
@@ -29,7 +35,7 @@ function execute(client: Client, config: IConfig) {
         if(!config.chats.includes(message.channel.id)) return;
         
         messagesCache.push(message.content);
-        if(messagesCache.length <=  100) return;
+        if(messagesCache.length <=  120) return; //120
 
         const selected = selectedMessages[Math.floor(Math.random() * selectedMessages.length)];
         selectedMessages.splice(selectedMessages.indexOf(selected), 1);

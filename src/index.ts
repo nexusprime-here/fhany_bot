@@ -1,15 +1,14 @@
 import Discord, { Client, Message, MessageEmbed } from 'discord.js';
 import fs from 'fs';
+import embed from './embeds/src.index';
 
 const configPath = process.argv[2] === 'test' ? './config/configtest.json' : './config/config.json';
 const config: IConfig = require(configPath);
 
-export const token = config.token;
-import embed from './embeds/src.index';
-
 export const client = new Discord.Client({ partials: ['REACTION'] });
 
 export const commands: Commands = new Discord.Collection();
+const cooldowns: Cooldowns = new Discord.Collection();
 
 const commandFiles = fs.readdirSync('./dist/commands').filter((file: string) => file.endsWith('.js'));
 const eventFiles = fs.readdirSync('./dist/events').filter(file => file.endsWith('.js'));
@@ -21,13 +20,11 @@ for (const file of commandFiles) {
 for (const file of eventFiles) {
 	const event = require(`./events/${file}`);
 	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args, client));
+		client.once(event.name, (...args) => event.execute(...args, client, config));
 	} else {
-		client.on(event.name, (...args) => event.execute(...args, client));
+		client.on(event.name, (...args) => event.execute(...args, client, config));
 	}
 }
-
-const cooldowns: Cooldowns = new Discord.Collection();
 
 client.on('ready', async () => {
 	startFeatures(client)
@@ -50,7 +47,6 @@ function startFeatures(client: Client) {
 		}
 	});
 };
-
 
 client.on('message', async message => {
 	if (!message.content.startsWith(config.prefix) || message.author.bot) return;
@@ -144,7 +140,7 @@ client.on('message', async message => {
 	};
 });
 
-client.login(token);
+client.login(config.token);
 
 
 /* Types */
