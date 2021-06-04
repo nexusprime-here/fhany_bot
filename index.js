@@ -16,10 +16,7 @@ const config = {
 }
 const updater = new AutoGitUpdate(config);
 
-updater.setLogConfig({
-	logDebug: false,
-	logDetail: false
-})
+updater.setLogConfig({ logDebug: false, logDetail: false });
     
 setImmediate(async () => require('./dist/index'));
 setInterval(async () => {
@@ -28,7 +25,7 @@ setInterval(async () => {
 
 	if(notUpdated) return
 
-	exec('npx tsc', (error, _, sterr) => {
+	exec('npm run build', (error, _, sterr) => {
 		if(error) return console.log(error);
 		if(sterr) return console.log(sterr);
 

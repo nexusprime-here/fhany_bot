@@ -1,7 +1,9 @@
 import Discord, { Client, Message, MessageEmbed } from 'discord.js';
 import fs from 'fs';
 
-import config, { prefix } from './config/configtest.json';
+const configPath = process.argv[2] === 'test' ? './config/configtest.json' : './config/config.json';
+const config: IConfig = require(configPath);
+
 export const token = config.token;
 import embed from './embeds/src.index';
 
@@ -51,9 +53,9 @@ function startFeatures(client: Client) {
 
 
 client.on('message', async message => {
-	if (!message.content.startsWith(prefix) || message.author.bot) return;
+	if (!message.content.startsWith(config.prefix) || message.author.bot) return;
 
-	const args = message.content.slice(prefix.length).split(/ +/);
+	const args = message.content.slice(config.prefix.length).split(/ +/);
 	const commandName = args.shift()?.toLowerCase();
 
 	if(!commandName) return;
@@ -108,7 +110,7 @@ client.on('message', async message => {
 		let reply = embed.missingArgs;
 
 		if (command.usage) {
-			reply = embed.missingArgs.setDescription(`O jeito correto seria: \`${prefix}${command.name} ${command.usage}\``);
+			reply = embed.missingArgs.setDescription(`O jeito correto seria: \`${config.prefix}${command.name} ${command.usage}\``);
 		};
 
 		return message.channel.send(reply);

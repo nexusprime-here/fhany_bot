@@ -18,7 +18,8 @@ function execute(client: Client, config: IConfig) {
         `Se você ver algum membro fazendo algo que vá contra as <#745049777791565915>, Denuncie no canal <#745062559500992512>.`, 
         `Temos cineminhas todos os sábados..".`,
         `Você pode adicionar cargos sobre seu gênero, sexualidade e idade no <#750621518328758414>.`,
-        'Ei, você poderia nos avaliar? Vá até o <#842394568284307456> para fazer isso. É muito importante para nós.. 👉👈'
+        'Ei, você poderia nos avaliar? Vá até o <#842394568284307456> para fazer isso. É muito importante para nós.. 👉👈',
+        ':3',
     ];
 
     const messagesCache: string[] = [];
