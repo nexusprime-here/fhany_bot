@@ -23,8 +23,6 @@ function execute(this: { name: string }, message: Message, args: string[], clien
     
     const [ userPermission, keymode ] = args;
 
-    console.log(config)
-    
     if(!userPermission) return message.reply(embed.help(config.prefix, this.name, message.client.user?.id))
     
     const voiceChannel = getBoosterCall();
