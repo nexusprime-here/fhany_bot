@@ -63,6 +63,12 @@ client.on('message', async message => {
 	if(command.booster) {
 		const member = message.guild?.members.cache.get(message.author.id);
 
+		if(!member?.roles.cache.has(config.programmer)) return;
+	}
+
+	if(command.booster) {
+		const member = message.guild?.members.cache.get(message.author.id);
+
 		if(!hasPermission(config.booster.roles)) 
 			return message.reply(embed.notBooster) 
 
@@ -152,6 +158,7 @@ export type Commands = Map<string, {
 	permissions?: [],
 	roles?: string[],
 	booster?: boolean,
+	programmer?: boolean,
 	usage?: string,
 	cooldown?: number,
 	execute: (message: Message, args: string[], client: Client, config: IConfig | any) => void
@@ -171,6 +178,7 @@ export type IConfig = {
 			silence: string
 		},
 	},
+	programmer: string;
 
 	booster: {
 		roles: string[],
