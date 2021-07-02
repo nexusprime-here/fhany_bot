@@ -31,7 +31,7 @@ async function execute(this: { name: string }, message: Message, args: string[],
     createChannelVoice(type)?.then(channel => {
         if(!channel) return
 
-        message.channel.send(embed.channelCreated(type === 'privado', channel?.id))
+        message.channel.send(embed.channelCreated(type === 'privado', channel.id))
         waitForUsersToJoin(channel, message.author.id);
     });
 
