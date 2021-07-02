@@ -24,8 +24,7 @@ async function execute(this: { name: string }, message: Message, args: string[],
     
     if(!!userInDatabase) return message.channel.send(embed.alreadyCreated)
 
-    const everyone = message.guild?.roles.everyone.id;
-
+    const everyone = message.guild?.roles.cache.get(message.guild.id)
     if(type !== 'publico' && type !== 'privado') return message.channel.send(embed.typeNotExist);
 
     createChannelVoice(type)?.then(channel => {

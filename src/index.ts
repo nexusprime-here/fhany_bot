@@ -2,6 +2,8 @@ import Discord, { Client, Message, MessageEmbed } from 'discord.js';
 import fs from 'fs';
 import embed from './embeds/src.index';
 
+import './config/config.json';
+import './config/configtest.json';
 const configPath = process.argv[2] === 'test' ? './config/configtest.json' : './config/config.json';
 const config: IConfig = require(configPath);
 
