@@ -8,15 +8,16 @@
 
     "booster": {
         "roles": ["779055143815348244", "779055195028062269"],
-        "category": "745050725641486479"
+        "category": "772812962854338564"
     },
 
     "fhanyPresenceDetector": {
         "fhany": "607999934725357578",
-        "channelsId": ["772812962854338561", "772812962854338563"],
         "roles": {
             "silence": "779055012038311944"
-        }
+        },
+        "whiteListChannels": ["782049949625352243"],
+        "blackListChannels": ["813131329339260940"]
     },
     
     "temporaryCalls": {

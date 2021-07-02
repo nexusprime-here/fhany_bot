@@ -15,8 +15,9 @@ function execute(client: Client, config: IConfig) {
     
     client.on('message', async message => {
         if(message.author.bot) return
-        if(!config.chats.includes(message.channel.id)) return;
+        if(config.fhanyPresenceDetector.whiteListChannels.includes(message.channel.id)) return;
         if(message.author.id === config.fhanyPresenceDetector.fhany) {
+            if(config.fhanyPresenceDetector.blackListChannels.includes(message.channel.id)) return;
             const fetchChannel = client.channels.cache.get(message.channel.id);
             
             const count = getLastNumber();
@@ -31,6 +32,7 @@ function execute(client: Client, config: IConfig) {
         } else {
             if(!await mentionTheFhany(message)) return;
             if(await isStaffer()) return;
+            if(config.fhanyPresenceDetector.blackListChannels.includes(message.channel.id)) return deleteUserMessage(message, true);
             
             fhanyActiveCache.length === 0 && deleteUserMessage(message);
         }
@@ -60,9 +62,12 @@ function execute(client: Client, config: IConfig) {
                 terminated(false)
             });
         };
-        function deleteUserMessage(message: Message) {
+        function deleteUserMessage(message: Message, isBlackList?: boolean) {
             searchUserInCache(message.author).length === 0 
-                && message.reply(embed.mentionFhanyNotPermitted1(message));
+                && message.reply(isBlackList 
+                    ? embed.mentionFhanyNotPermittedAlternative(message)
+                    : embed.mentionFhanyNotPermitted1(message)
+                );
         
             searchUserInCache(message.author).length === 1
                 && message.reply(embed.mentionFhanyNotPermitted2(message));
@@ -103,7 +108,8 @@ function execute(client: Client, config: IConfig) {
     });
     
     client.on('typingStart', async (channel, user) => {
-        if(!config.chats.includes(channel.id)) return;
+        if(config.fhanyPresenceDetector.blackListChannels.includes(channel.id)) return;
+        if(config.fhanyPresenceDetector.whiteListChannels.includes(channel.id)) return;
         if(user.id !== config.fhanyPresenceDetector.fhany) return;
 
         const fetchChannel = client.channels.cache.get(channel.id);
@@ -122,11 +128,11 @@ function execute(client: Client, config: IConfig) {
     /* Global Functions */
     function warnAllUsersOfFhanyOff(channel: any) {
         channel.send(embed.fhanyLeftTheChat)
-            .then((msg: Message) => setTimeout(() => msg.delete(), 1000 * 25));
+            // .then((msg: Message) => setTimeout(() => msg.delete(), 1000 * 25));
     };
     function warnAllUsersOfFhanyOn(channel: any) {
         channel.send(embed.fhanyIsActiveInChat)
-            .then((msg: Message) => setTimeout(() => msg.delete(), 1000 * 25));
+            // .then((msg: Message) => setTimeout(() => msg.delete(), 1000 * 25));
     };
     function getLastNumber(): number {
         if(fhanyActiveCache.length === 0) {

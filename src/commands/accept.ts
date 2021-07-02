@@ -2,6 +2,7 @@ import { Client, Message } from "discord.js";
 import { IConfig } from "..";
 import database from '../database';
 import embed from '../embeds/commands.accept';
+import isStaffer from "../utils/isStaffer";
 
 const db: any = database
 
@@ -10,7 +11,8 @@ module.exports = {
     description: 'Aceita uma sugestão do canal sugestões',
     guildOnly: true,
     async execute(message: Message, args: string[], client: Client, config: IConfig) {
-        if(!await isStaff()) return deleteCommandMessage();
+        const member = message.guild?.members.cache.get(message.author.id);
+        if(!await isStaffer(member, config)) return deleteCommandMessage();
         if(!message.reference) return sendErrorMessageAndRemoveCommandMessage();
         if(!message.reference.messageID) return sendErrorMessageAndRemoveCommandMessage();
 
@@ -27,20 +29,6 @@ module.exports = {
         function sendDataForDB() {
             db.get('suggestionsCache').find({ id: referenceMessage.embeds[0].footer?.text }).assign({ accept: true }).write();
         }
-        function isStaff() {
-            return new Promise<boolean>((terminated => {
-                const guild = client.guilds.cache.get(config.guild);
-                const member = guild?.members.cache.find(member => member.id === message.author.id);
-    
-                member?.roles.cache.forEach(role => {
-                    config.suggestion.permittedRoles.forEach((role2: string) => {
-                        role.id === role2 && terminated(true);
-                    })
-                });
-
-                terminated(false);
-            }));
-        };
         function deleteCommandMessage() {
             message.delete();
         }

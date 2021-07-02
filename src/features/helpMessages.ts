@@ -9,23 +9,20 @@ module.exports = {
 
 function execute(client: Client, config: IConfig) {
     const allMessages = [
-        `Você sabia que caso ache injusto alguma punição sua, você pode constatar a staff no <#835612037954273300> e reclamar?`,
+        `Você sabia que caso ache injusto alguma punição sua, você pode constatar a staff no <#855579164576186368> e reclamar?`,
         `Seja booster agora! Quer saber as vantagens? Visite <#797930500231790633>.`,
         'Não mande links aqui!',
         'Não tente enviar gifs, vídeos ou imagens aqui se você não for booster!',
         `Temos o <#811768172079218729> para spawnar canais de voz para você encontrar parceiros para jogos!`,
         'Não marque a fhany caso ela não esteja ativa no chat, eu avisarei se ela estiver.',
-        `Se você ver algum membro fazendo algo que vá contra as <#745049777791565915>, Denuncie no canal <#745062559500992512>.`, 
-        `Temos cineminhas todos os sábados..".`,
+        `Se você ver algum membro fazendo algo que vá contra as <#745049777791565915>, denuncie no canal <#855569272453726278>.`, 
+        `Se você ver algum staffer abusando do poder, denuncie no canal <#855569272453726278>.`, 
         `Você pode adicionar cargos sobre seu gênero, sexualidade e idade no <#750621518328758414>.`,
         'Ei, você poderia nos avaliar? Vá até o <#842394568284307456> para fazer isso. É muito importante para nós.. 👉👈',
         'Não mande textos repetidos!',
         'NÃO GRITE DEMAIS!!',
-        'PAREM de me marcar para me xingar, isto me chateia >:(',
-        'Você já viu o twitter da fhany? NÃO??! Ah, [Entra aqui](https://twitter.com/Fhany_yt)...',
         'Para ver todos os cargos disponíveis no server e suas funções, visite <#781341316420075530>',
         'Tem uma sugestão para o server? Deixe seu comentário no <#812513954727067728>',
-        ':3',
     ];
 
     const messagesCache: string[] = [];

@@ -63,12 +63,6 @@ client.on('message', async message => {
 	if(command.booster) {
 		const member = message.guild?.members.cache.get(message.author.id);
 
-		if(!member?.roles.cache.has(config.programmer)) return;
-	}
-
-	if(command.booster) {
-		const member = message.guild?.members.cache.get(message.author.id);
-
 		if(!hasPermission(config.booster.roles)) 
 			return message.reply(embed.notBooster) 
 
@@ -170,13 +164,15 @@ export type IConfig = {
 	token: string,
 	prefix: string,
 	guild: string,
-	chats: string[],
+	chats: Array<string>
 	staffers: string[],
 	fhanyPresenceDetector: {
 		fhany: string,
 		roles: {
 			silence: string
 		},
+		blackListChannels: Array<string>,
+		whiteListChannels: Array<string>
 	},
 	programmer: string;
 

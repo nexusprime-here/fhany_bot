@@ -6,4 +6,4 @@ function PromiseSync(): { resolve: () => void, reject: (reason: any) => void, va
     return { value: promise, resolve: result.resolve, reject: result.reject }
 }
 
-export { PromiseSync }
+export default PromiseSync;

@@ -14,16 +14,22 @@ export default {
         .setColor('#F55EB3')
         .setThumbnail('https://cdn.discordapp.com/avatars/811251945570041878/a5bada1a9bf2c713820453b5bb49ea86.png?size=256')
         .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'),
+
+    mentionFhanyNotPermittedAlternative: (message: Message) => new MessageEmbed()
+        .setTitle('⚠ Aviso')
+        .setDescription(`<@${message.author.id}>, você não pode enviar mensagens para a Fhany neste chat. \n\nNão mencione ela outra vez.`)
+        .setColor('#FFFF00')
+        .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'),
     
     mentionFhanyNotPermitted1: (message: Message) => new MessageEmbed()
         .setTitle('⚠ Aviso')
-        .setDescription(`<@${message.author.id}>, você não pode enviar mensagem para a Fhany neste momento, ela não está ativa no chat. \n\nQuando ela estiver ativa eu avisarei, até lá, não mencione ela outra vez.`)
+        .setDescription(`<@${message.author.id}>, você não pode enviar mensagens para a Fhany neste momento, ela não está ativa no chat. \n\nQuando ela estiver ativa eu avisarei, até lá, não mencione ela outra vez.`)
         .setColor('#FFFF00')
         .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'),
 
     mentionFhanyNotPermitted2: (message: Message) => new MessageEmbed()
         .setTitle('⚠ Aviso')
-        .setDescription(`Este é seu último aviso <@${message.author.id}>, não mencione a Fhany mais uma vez. Ela não está ativa no chat!`)
+        .setDescription(`Este é seu último aviso <@${message.author.id}>, não mencione a Fhany mais uma vez.`)
         .setColor('#FFFF00')
         .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'),
 

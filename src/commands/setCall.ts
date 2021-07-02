@@ -1,6 +1,7 @@
 import { Client, Message } from "discord.js";
 import { IConfig } from "..";
 import db from '../database';
+import isStaffer from "../utils/isStaffer";
 
 import embed from '../embeds/commands.setCall';
 
@@ -19,8 +20,6 @@ function execute(this: { name: string }, message: Message, args: string[], clien
         'convidar': 'CREATE_INSTANT_INVITE',
         'transmitir': 'STREAM'
     }
-    const moderator = '748601213079126027'
-    
     const [ userPermission, keymode ] = args;
 
     if(!userPermission) return message.reply(embed.help(config.prefix, this.name, message.client.user?.id))
@@ -33,22 +32,24 @@ function execute(this: { name: string }, message: Message, args: string[], clien
     if(userPermission === 'fechar' || userPermission === 'excluir') return function() {
         !voiceChannel.deleted && voiceChannel.delete();
         db.get('boostersThatCreatedCalls').remove({ channelId: voiceChannel.id }).write();
-    }()
 
-    if(userPermission !== 'ver' && userPermission !== 'conectar' && userPermission !== 'convidar' && userPermission !== 'transmitir') return message.channel.send(embed.invalidOptions(Object.keys(permissionsAccepted)));
-    const permission = permissionsAccepted[userPermission]
+        message.channel.send(embed.deleted);
+    }();
+
+    if(userPermission !== 'ver' && userPermission !== 'conectar' && userPermission !== 'convidar' && userPermission !== 'transmitir') 
+        return message.channel.send(embed.invalidOptions(Object.keys(permissionsAccepted)));
+
+    const permission = permissionsAccepted[userPermission];
 
     const taggedUser = message.mentions.users.first();
-    if(!taggedUser) return
+    if(!taggedUser) return embed.notTaggedUser;
 
     const user = message.guild?.members.cache.get(taggedUser.id);
-    if(user?.roles.cache.has(moderator)) return embed.isModerator
+    if(isStaffer(user, config)) return embed.isModerator
 
     voiceChannel.updateOverwrite(taggedUser.id, {
         [permission]: boolean === true,
-    }).then(() => {
-        message.channel.send(embed.sucessMessage(taggedUser.id, permission, boolean));
-    })
+    }).then(() => message.channel.send(embed.sucessMessage(taggedUser.id, permission, boolean)));
 
 
     /* Functions */

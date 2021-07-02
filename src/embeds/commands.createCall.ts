@@ -31,4 +31,9 @@ export default {
         .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>')
         .setColor('#F55EB3'),
 
+    nameVerySmall: new MessageEmbed()
+        .setTitle('❌ Nome muito pequeno')
+        .setDescription('O nome do Canal está muito pequeno, tem que ter mais de 1 caracter!')
+        .setColor('#e31c17')
+        .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'),
 }

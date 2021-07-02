@@ -20,28 +20,25 @@ async function execute(this: { name: string }, message: Message, args: string[],
     const userInDatabase: IUserDb = db.get('boostersThatCreatedCalls').find({ userId: message.author.id }).value();
 
     if(channelName.join(' ').length > 20) return message.channel.send(embed.nameVeryLarge);
+    else if(channelName.join(' ').length < 1) return message.channel.send(embed.nameVerySmall);
     
     if(!!userInDatabase) return message.channel.send(embed.alreadyCreated)
 
     const everyone = message.guild?.roles.everyone.id;
 
-    if(type === 'publico' || type === 'privado') {
-        createChannelVoice(type)?.then(channel => {
-            if(!channel) return
+    if(type !== 'publico' && type !== 'privado') return message.channel.send(embed.typeNotExist);
 
-            message.channel.send(embed.channelCreated(type === 'privado', channel?.id))
-            waitForUsersToJoin(channel, message.author.id);
-        });
-    }
-    else { 
-        message.channel.send(embed.typeNotExist);
-    }
+    createChannelVoice(type)?.then(channel => {
+        if(!channel) return
+
+        message.channel.send(embed.channelCreated(type === 'privado', channel?.id))
+        waitForUsersToJoin(channel, message.author.id);
+    });
 
 
+    /* Functions */
     async function createChannelVoice(type: 'publico' | 'privado') {
-        if(!everyone) return
-
-        const moderator = '748601213079126027'
+        if(!everyone) return;
 
         const channel = await message.guild?.channels.create(`❖ ${channelName.join(' ')}`, {
             parent: config.booster.category,
@@ -64,13 +61,11 @@ async function execute(this: { name: string }, message: Message, args: string[],
                 {
                     id: message.author.id,
                     allow: ['VIEW_CHANNEL', 'PRIORITY_SPEAKER', 'MOVE_MEMBERS', 'CREATE_INSTANT_INVITE']
-                },
-                {
-                    id: moderator,
-                    allow: ['VIEW_CHANNEL', 'CONNECT']
                 }
             ]
         });
+
+        config.staffers.forEach(staff => channel?.updateOverwrite(staff, { 'VIEW_CHANNEL': true, 'CONNECT': true }));
 
         !!channel && db.get('boostersThatCreatedCalls').push({ userId: message.author.id, channelId: channel.id }).write();
 

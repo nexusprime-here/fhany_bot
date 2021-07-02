@@ -1,6 +1,7 @@
 import { Client, Message } from "discord.js";
 import database from "../database";
 import embed from '../embeds/commands.reject';
+import isStaffer from "../utils/isStaffer";
 
 const db: any = database;
 
@@ -9,7 +10,8 @@ module.exports = {
     description: 'Rejeita uma sugestão e/ou apaga do canal sugestões',
     guildOnly: true,
     async execute(message: Message, args: string[], client: Client, config: any) {
-        if(!await isStaff()) return deleteCommandMessage();
+        const member = message.guild?.members.cache.get(message.author.id);
+        if(!await isStaffer(member, config)) return deleteCommandMessage();
         if(!message.reference) return sendErrorMessageAndRemoveCommandMessage();
         if(!message.reference.messageID) return sendErrorMessageAndRemoveCommandMessage();
 
@@ -22,20 +24,6 @@ module.exports = {
 
 
         /* Functions */
-        function isStaff() {
-            return new Promise<boolean>((terminated => {
-                const guild = client.guilds.cache.get(config.guildId);
-                const member = guild?.members.cache.find(member => member.id === message.author.id);
-    
-                member?.roles.cache.forEach(role => {
-                    config.suggestion.permittedRoles.forEach((role2: string) => {
-                        role.id === role2 && terminated(true);
-                    })
-                });
-
-                terminated(false);
-            }));
-        };
         function deleteCommandMessage() {
             message.delete();
         }
