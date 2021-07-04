@@ -20,7 +20,7 @@ export default {
         .setColor('#00FF00')
         .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>'),
         
-    isModerator: () => new MessageEmbed()
+    isModerator: new MessageEmbed()
         .setTitle('❌ Usuário inválido')
         .setDescription('Você não pode mudar a permissão deste usuário porque ele faz parte da Staff.')
         .setColor('#e31c17')

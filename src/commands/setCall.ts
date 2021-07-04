@@ -13,7 +13,7 @@ module.exports = {
     execute
 }
 
-function execute(this: { name: string }, message: Message, args: string[], client: Client, config: IConfig) {
+async function execute(this: { name: string }, message: Message, args: string[], client: Client, config: IConfig) {
     const permissionsAccepted = {
         'ver': 'VIEW_CHANNEL',
         'conectar': 'CONNECT',
@@ -36,8 +36,7 @@ function execute(this: { name: string }, message: Message, args: string[], clien
         message.channel.send(embed.deleted);
     }();
 
-    if(userPermission !== 'ver' && userPermission !== 'conectar' && userPermission !== 'convidar' && userPermission !== 'transmitir') 
-        return message.channel.send(embed.invalidOptions(Object.keys(permissionsAccepted)));
+    if(userPermission !== 'ver' && userPermission !== 'conectar' && userPermission !== 'convidar' && userPermission !== 'transmitir') return message.channel.send(embed.invalidOptions(Object.keys(permissionsAccepted)));
 
     const permission = permissionsAccepted[userPermission];
 
@@ -45,7 +44,7 @@ function execute(this: { name: string }, message: Message, args: string[], clien
     if(!taggedUser) return embed.notTaggedUser;
 
     const user = message.guild?.members.cache.get(taggedUser.id);
-    if(isStaffer(user, config)) return embed.isModerator
+    if(await isStaffer(user, config)) return message.reply(embed.isModerator);
 
     voiceChannel.updateOverwrite(taggedUser.id, {
         [permission]: boolean === true,
