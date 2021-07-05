@@ -11,6 +11,11 @@
         "category": "745050725641486479"
     },
 
+    "sendNotice": {
+        "admChannel": "769325241070518295",
+        "noticeChannel": "745294416654106666"
+    },
+
     "fhanyPresenceDetector": {
         "fhany": "569181224648835095",
         "roles": {

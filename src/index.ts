@@ -183,6 +183,11 @@ export type IConfig = {
 		category: string
 	}
 
+	sendNotice: {
+		admChannel: string,
+		noticeChannel: string
+	}
+
 	temporaryCalls: {
 		normal: {
 			controllerChannel: string,
