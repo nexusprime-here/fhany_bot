@@ -1,5 +1,6 @@
 import { Client, Message, MessageEmbed } from "discord.js";
 import { IConfig } from "..";
+import { globalCommon } from "../embeds/global";
 
 module.exports = {
     name: 'helpMessages',
@@ -32,7 +33,7 @@ function execute(client: Client, config: IConfig) {
         if(!config.chats.includes(message.channel.id)) return;
         
         messagesCache.push(message.content);
-        if(messagesCache.length <=  120) return; //120
+        if(messagesCache.length <=  120) return;
 
         const selected = selectedMessages[Math.floor(Math.random() * selectedMessages.length)];
         selectedMessages.splice(selectedMessages.indexOf(selected), 1);
@@ -42,13 +43,11 @@ function execute(client: Client, config: IConfig) {
             selectedMessages = [...allMessages];
         }
 
-        const embed = new MessageEmbed()
+        const embed = globalCommon()
             .setTitle('Dica')
             .setDescription(selected)
-            .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>')
-            .setColor('#F55EB3');
 
-        message.channel.send(embed);
+        message.channel.send({ embeds: [embed] });
         messagesCache.length = 0;
     });
 
