@@ -1,5 +1,5 @@
 {
-    "token": "NzA5MDcyNjY5MDIyMzU1NDg2.XrglYg.dQfJVxgfnPwnmqTmjIJITYNiZhc",
+    "token": "NzA5MDcyNjY5MDIyMzU1NDg2.XrglYg.HlJVQ0LdfCztxpWW_GReZulEyYg",
     "prefix": "!",
     "botId": "709072669022355486",
     "guild": "772812962397421589",
@@ -26,14 +26,8 @@
     },
     
     "temporaryCalls": {
-        "normal": {
-            "controllerChannel": "811380233894232106",
-            "category": "772812962854338564"
-        },
-        "games": {
-            "controllerChannel": "819294096572809236",
-            "category": "811380652740968460"
-        },
+        "controllerChannel": "819294096572809236",
+        "category": "811380652740968460",
         "roles": {
             "booster": "750451871084445788",
             "vip": "750137067438342224"

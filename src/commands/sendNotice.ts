@@ -29,8 +29,8 @@ module.exports = {
 
         const selectedCategory = acceptedCategories.filter(category => category.name === userCategory);
 
-        if(selectedCategory.length < 1) return message.reply(embed.wrongCategory);
-        if(content.length < 1) return message.reply(embed.missingContent);
+        if(selectedCategory.length < 1) return message.reply({ embeds: [embed.wrongCategory] });
+        if(content.length < 1) return message.reply({ embeds: [embed.missingContent] });
 
         const admChannel = message.guild?.channels.cache.get(config.sendNotice.admChannel);
         const noticeChannel = message.guild?.channels.cache.get(config.sendNotice.noticeChannel);
@@ -41,7 +41,7 @@ module.exports = {
         })();
 
         const sucessEmbed = embed.notice(selectedCategory[0], content.join(' '), message.author);
-        selectedChannel?.isText() && selectedChannel.send(selectedChannel === noticeChannel ? '@everyone' : '', { embed: sucessEmbed })
+        selectedChannel?.isText() && selectedChannel.send(selectedChannel === noticeChannel ? '@everyone' : '', { embeds: sucessEmbed })
             .then(msg => {
                 if(selectedChannel !== admChannel) return;
 

@@ -1,42 +1,42 @@
-const app = require('express')();
-const AutoGitUpdate = require('auto-git-update');
-const { exec } = require('child_process');
+// const app = require('express')();
+// const AutoGitUpdate = require('auto-git-update');
+// const { exec } = require('child_process');
 
-app.get('/', (req, res) => {
-	const date = new Date();
+// app.get('/', (req, res) => {
+// 	const date = new Date();
 
-	console.log(`Ping recebido: ${date.getDate()}/${date.getMonth() + 1} às ${date.getHours() - 3}:${date.getMinutes()}`)
-	res.sendStatus(200)
-})
+// 	console.log(`Ping recebido: ${date.getDate()}/${date.getMonth() + 1} às ${date.getHours() - 3}:${date.getMinutes()}`)
+// 	res.sendStatus(200)
+// })
 
-const config = {
-	repository: 'https://github.com/XNexusPrimeX/fhany_bot',
-	token: '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',
-	tempLocation: __dirname + '/temp',		
-}
-const updater = new AutoGitUpdate(config);
+// const config = {
+// 	repository: 'https://github.com/XNexusPrimeX/fhany_bot',
+// 	token: '?',
+// 	tempLocation: __dirname + '/temp',		
+// }
+// const updater = new AutoGitUpdate(config);
 
-updater.setLogConfig({ logDebug: false, logDetail: false, logError: true });
+// updater.setLogConfig({ logDebug: false, logDetail: false, logError: true });
     
-setImmediate(() => require('./dist/index'));
-setInterval(async () => {
-	const notUpdated = (await updater.compareVersions()).upToDate;
-	await updater.autoUpdate()
+// setImmediate(() => require('./dist/index'));
+// setInterval(async () => {
+// 	const notUpdated = (await updater.compareVersions()).upToDate;
+// 	await updater.autoUpdate()
 
-	if(notUpdated) return
+// 	if(notUpdated) return
 
-	exec('npm run build', (error, _, sterr) => {
-		if(error) return console.log(error);
-		if(sterr) return console.log(sterr);
+// 	exec('npm run build', (error, _, sterr) => {
+// 		if(error) return console.log(error);
+// 		if(sterr) return console.log(sterr);
 
-		requireUncached('./dist/index');
-	});
-}, 1000 * 60 * 2);
+// 		requireUncached('./dist/index');
+// 	});
+// }, 1000 * 60 * 2);
 
-app.listen(process.env.PORT);
+// app.listen(process.env.PORT);
 
 
-function requireUncached(module) {
-    delete require.cache[require.resolve(module)];
-    return require(module);
-}
+// function requireUncached(module) {
+//     delete require.cache[require.resolve(module)];
+//     return require(module);
+// }

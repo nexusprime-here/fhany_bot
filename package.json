@@ -1,6 +1,6 @@
 {
   "name": "fhany_bot",
-  "version": "8.1.7",
+  "version": "9.0.0",
   "description": "Este é um bot de discord que fiz para a Fhany, uma youtuber. Feito com muito carinho <3.",
   "main": "server.js",
   "scripts": {
@@ -24,7 +24,7 @@
   "license": "Copyright © 2021 | Nícolas Estevão Lima",
   "dependencies": {
     "auto-git-update": "github:XNexusPrimeX/auto-updater",
-    "discord.js": "^12.5.3",
+    "discord.js": "^13.0.0-dev.4886ae2.1627128182",
     "express": "^4.17.1",
     "lowdb": "^1.0.0",
     "nodemon": "^2.0.7",

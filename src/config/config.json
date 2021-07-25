@@ -26,14 +26,8 @@
     },
     
     "temporaryCalls": {
-        "normal": {
-            "controllerChannel": "",
-            "category": "745050725641486479"
-        },
-        "games": {
-            "controllerChannel": "811768172079218729",
-            "category": "745352852796473517"
-        },
+        "controllerChannel": "811768172079218729",
+        "category": "745352852796473517",
         "roles": {
             "booster": "750451871084445788",
             "vip": "750137067438342224"

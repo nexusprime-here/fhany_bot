@@ -1,6 +1,8 @@
-import { Channel, Client, Guild, GuildMember, MessageReaction, PartialUser, User, VoiceChannel } from "discord.js";
+import { Channel, Client, Guild, GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed, MessageReaction, MessageSelectMenu, MessageSelectOptionData, NewsChannel, PartialUser, SelectMenuInteraction, TextChannel, User, VoiceChannel } from "discord.js";
 import { IConfig } from "..";
 import database from '../database';
+
+import embed from '../embeds/features.temporaryCalls'
 
 const db: any = database; // error in types of lowdb
 
@@ -11,164 +13,56 @@ module.exports = {
 }
 
 async function execute(client: Client, config: IConfig) {
-    const guild = client.guilds.cache.get(config.guild);
+    const guild = client.guilds.cache.find(guild => guild.id === config.guild);
+    const controllerChannel = guild?.channels.cache.find(channel => channel.id === config.temporaryCalls.controllerChannel);
 
-    removeOldReactions(guild, config);
-    removeEmptyCalls(guild);
+    // removeEmptyCalls(guild);
 
-    const controllerMessage = (type: 'normal' | 'games') => {
-        const channel = guild?.channels.cache.get(config.temporaryCalls[type].controllerChannel);
+    if(!controllerChannel || controllerChannel.isThread() || !controllerChannel.isText()) return;
 
-        return channel?.isText() && channel.messages.cache.first()?.id;
+    const acceptedCategories = {
+        '🛸┇ Arcade': 'Feitos para máquinas de arcade.', 
+        '🍄┇ Plataforma': 'Personagens se move horizontalmente.', 
+        '⚽┇ Esporte': 'Simulam a prática de esportes.', 
+        '🚗┇ Corrida': 'Competição de corrida usando veículos.', 
+        '👹┇ RPG': 'São jogos que se assimilam aos RPGs de mesa.', 
+        '♟┇ Estratégia': 'Enfatiza habilidade de planejamento para ganhar.', 
+        '⚔┇ Aventura': 'O jogador vive uma história com exploração.', 
+        '🔫┇ FPS/TPS': 'O Objetivo é acertar alvos com armas de Fogo.'
     }
 
-    client.on('messageReactionAdd', async (data, user) => {
-        if(data.partial) await data.fetch();
-        if(data.message.id !== controllerMessage('games') && data.message.id !== controllerMessage('normal')) return;
+    let controllerMessage = await fetchControllerMessage(controllerChannel);
+    if(!controllerMessage) controllerMessage = await createControllerMessage(controllerChannel, acceptedCategories);
 
-        removeReaction(data.message.channel.id, client, user, data);
+    client.on('interactionCreate', async interaction => {
+        if (!interaction.isSelectMenu() || interaction.customId !== 'controllerMenu') return;
         
-        const categoriesAccepted = {
-            '🔮': 'LoL', '🛸': 'Among Us', '🔪': 'Brawlhala', '🏹': 'Genshin', '👹': 'Erebus/RPG',
-            '🔫': 'CoD', '🧊': 'Minecraft', '💣': 'Valorant', '🚓': 'GTA', '🚗': 'Rocket League', 
-            '⚽': 'Esportes','♟': 'Xadrez/Damas', '❓': 'Outros', '🎇': 'Bordel Vip', '🔹': 'Call Boosters',
-            '🔒': 'Privado', '🎧': 'Call Comum'
-        };
-
-        const userInDatabase: IUserDb = db.get('usersThatCreatedCalls').find({ userId: user.id }).value();
-        const category = Object.entries(categoriesAccepted).find(category => category[0] === data.emoji.name);
+        const userInDatabase: IUserDb = db.get('usersThatCreatedCalls').find({ userId: interaction.user.id }).value();
         
-        !userInDatabase && !!category && function([emoji, name]) {
-            if(!guild) return;
+        if(!guild) return;
+        if(userInDatabase) return console.log(await interaction.reply({ embeds: [embed.alreadyCreatedCall], ephemeral: true }));
+        if(userAlreadyOnCall(guild, interaction.user.id)) return interaction.reply({ embeds: [embed.alreadyOnCall], ephemeral: true });
+        
+        const createdChannel = await createChannel(`彡${interaction.values[0]}`, interaction.user.id, guild, config);
+        if(!createdChannel) return interaction.reply({ embeds: [embed.error], ephemeral: true });
+        
+        const invite = await createdChannel.createInvite({ maxUses: 1 })
+        const row = new MessageActionRow().addComponents(
+            new MessageButton()
+            .setLabel('Entre no Canal de Voz')
+            .setURL(invite.url)
+            .setStyle('LINK')
+            );
 
-            !userAlreadyOnCall(guild, user.id) && createChannel(`彡${emoji}┇ ${name}`, user.id, user.id, guild)
-                .then(async channel => {
-                    name === 'Bordel Vip' 
-                        && await setSettings(channel, config.temporaryCalls.games.category, "vip", client, config);    
+        interaction.reply({ embeds: [embed.sucess], ephemeral: true, components: [row] });
 
-                    name === 'Call Boosters' 
-                        && await setSettings(channel, config.temporaryCalls.games.category, "booster", client, config);
-
-                    name !== 'Bordel Vip' && name !== 'Call Boosters' 
-                        && await setSettings(channel, config.temporaryCalls.games.category, "basic", client, config);
+        waitForUsersToJoin(createdChannel, interaction.user.id, guild);
+    })
     
-                    await waitForUsersToJoin(channel, user.id, guild);
-                })
-                .catch(err => console.error(err));
-        }(category);
-    });
 };
 
 
 /* Functions */
-async function removeOldReactions(guild: Guild | undefined, config: any) { // not connected to controllerMessageNormal
-    if(!guild) return
-
-    const controllerMessageGames = await async function() {
-        const channel = guild.channels.cache.get(config.temporaryCalls.games.controllerChannel);
-
-        return channel?.isText() ? (await channel.messages.fetch({ limit: 1 })).first() : undefined
-    }();
-
-    const reactions = controllerMessageGames?.reactions
-
-    reactions?.cache.forEach(async reaction => (await reaction.users.fetch()).forEach(user => {
-        if(user.id === guild.me?.id) return;
-        controllerMessageGames?.reactions.cache.find(r => r.emoji.name === reaction.emoji.name)?.users.remove(user.id);
-    }));
-}
-function removeEmptyCalls(guild: Guild | undefined) {
-    if(!guild) return
-
-    const usersDB: IUserDb[] = db.get('usersThatCreatedCalls').value();
-    const usersDB2: IUserDb[] = db.get('boostersThatCreatedCalls').value();
-
-    usersDB.forEach(user => {
-        if(!user) return;
-
-        const findChannel = (id: string) => guild.channels.cache.find(channel => channel.id === id);
-
-        const dbChannel = db.get('usersThatCreatedCalls').find({ channelId: findChannel(user?.channelId)?.id }).value();
-
-        !!dbChannel && findChannel(user?.channelId)?.members.size === 0 
-            && db.get('usersThatCreatedCalls').remove({ channelId: findChannel(user?.channelId)?.id }).write();
-            
-        findChannel(user?.channelId)?.members.size === 0 && findChannel(user?.channelId)?.delete();
-    });
-    usersDB2.forEach(user => {
-        if(!user) return;
-
-        const findChannel = (id: string) => guild.channels.cache.find(channel => channel.id === id);
-        
-        const dbChannel = db.get('boostersThatCreatedCalls').find({ channelId: findChannel(user?.channelId)?.id }).value();
-
-        !!dbChannel && findChannel(user?.channelId)?.members.size === 0 
-            && db.get('boostersThatCreatedCalls').remove({ channelId: findChannel(user?.channelId)?.id }).write();
-            
-        findChannel(user?.channelId)?.members.size === 0 && findChannel(user?.channelId)?.delete();
-    });
-}
-function userAlreadyOnCall(guild: Guild, memberId: string) {
-    const member = guild.members.cache.get(memberId);
-    if(!member) return;
-
-    return !!member.voice.channel;
-};
-async function removeReaction(channelId: any, client: Client, user: User | PartialUser, data: MessageReaction) {
-    const channel = client.channels.cache.get(channelId); // Type error
-
-    if(!channel?.isText()) return
-
-    channel?.messages.fetch().then((channelMessages) => {
-        const message = channelMessages.first();
-        const reaction = message?.reactions.cache.find(reaction => !!reaction.count && reaction.count > 1);
-
-        reaction?.users.remove(user.id);
-    });
-};
-function createChannel(channelName: string, userId: string, channelId: string, guild: Guild) {
-    return new Promise<VoiceChannel>(async (resolve, reject) => {
-        !!guild && guild.channels.create(channelName, { type: 'voice' })
-            .then(channel => {
-                db.get('usersThatCreatedCalls').push({ userId: userId, channelId: channel.id }).write();
-                resolve(channel);
-            })
-            .catch(err => reject(err));
-    });
-};
-async function setSettings(channel: VoiceChannel, category: string, type: 'basic' | 'booster' | 'vip', client: Client, config: any) {
-    channel.setParent(category);
-
-    const everyone = client.guilds.cache.get(config.guildId)?.roles.everyone.id; 
-    if(!everyone) return;
-
-    type === 'basic' && await channel.overwritePermissions([
-        {
-            id: everyone,
-            allow: ['CONNECT', 'VIEW_CHANNEL']
-        },
-    ]);
-    type === 'booster' && await channel.overwritePermissions([
-        {
-            id: everyone,
-            deny: ['CONNECT']
-        },
-        {
-            id: config.temporaryCalls.roles.booster,
-            allow: ['CONNECT']
-        }
-    ]);
-    type === 'vip' && await channel.overwritePermissions([
-        {
-            id: everyone,
-            deny: ['CONNECT']
-        },
-        {
-            id: config.temporaryCalls.roles.vip,
-            allow: ['CONNECT']
-        }
-    ]);
-};
 async function waitForUsersToJoin(channel: VoiceChannel | undefined, userId: string, guild: any, lol: boolean = false) {
     if(channel === undefined) return;
 
@@ -178,8 +72,6 @@ async function waitForUsersToJoin(channel: VoiceChannel | undefined, userId: str
             usersInCall.push(member);
         });
 
-        lol === true && easterEgg(usersInCall, channel);
-        
         if(usersInCall.length < 1) {
             !channel.deleted && channel.delete();
             db.get('usersThatCreatedCalls').remove({ userId: userId }).write();
@@ -188,21 +80,91 @@ async function waitForUsersToJoin(channel: VoiceChannel | undefined, userId: str
         } else terminated(channel);
     }, 1000 * 15));
 }
-async function easterEgg(users: GuildMember[], channel: VoiceChannel) {
-    const findLoLSuperUser = new Promise<void>((resolve, reject) => {
-        users.forEach(user => user.roles.cache.has('748437789250682911') && resolve());
-
-        reject();
+async function createChannel(channelName: string, userId: string, guild: Guild, config: IConfig) {
+    if(!guild) return;
+    const parent = guild.channels.cache.find(channel => channel.id === config.temporaryCalls.category);
+    const everyone = guild.roles.everyone.id;
+    
+    const channel = await guild.channels.create(channelName, { 
+        type: 'GUILD_VOICE', 
+        parent: parent, 
+        permissionOverwrites: [
+            {
+                id: everyone,
+                allow: ['CONNECT', 'VIEW_CHANNEL']
+            }
+        ]
     });
 
-    try {
-        await findLoLSuperUser;
-        return await channel.setName('★🔮┇ LoL 𝓈𝓊𝓅𝑒𝓇');
-    } catch {
-        return await channel.setName('彡🔮┇ LoL');
-    } // i think this is not working... But ok.
-}
+    db.get('usersThatCreatedCalls').push({ userId: userId, channelId: channel.id }).write();
 
+    return channel;
+};
+function userAlreadyOnCall(guild: Guild, memberId: string) {
+    const member = guild.members.cache.find(member => member.id === memberId);
+    if(!member) return;
+
+    return !!member.voice.channel;
+};
+async function createControllerMessage(channel: NewsChannel | TextChannel, categories: any) {
+    channel.bulkDelete(100);
+    
+    const options: MessageSelectOptionData[] = [];
+    Object.entries(categories).forEach((category: any) => options.push({ label: category[0], value: category[0], description: category[1] }));
+
+    console.log(options);
+
+    const row = new MessageActionRow().addComponents(
+        new MessageSelectMenu()
+            .setCustomId('controllerMenu')
+            .setPlaceholder('Selecione o canal de voz aqui')
+            .addOptions(options)
+    );
+
+    return await channel.send({ embeds: [embed.controllerMessage], components: [row] });
+}
+async function fetchControllerMessage(channel: NewsChannel | TextChannel) {
+    const allMessagesOfChannel = await channel.messages.fetch();
+
+    if(allMessagesOfChannel.size > 1) return;
+
+    const message = allMessagesOfChannel.first();
+
+    if(!message?.components.length || message.components.length < 1) return;
+
+    return message;
+}
+// function removeEmptyCalls(guild: Guild | undefined) {
+//     if(!guild) return
+
+//     const usersDB: IUserDb[] = db.get('usersThatCreatedCalls').value();
+//     const usersDB2: IUserDb[] = db.get('boostersThatCreatedCalls').value();
+
+//     usersDB.forEach(user => {
+//         if(!user) return;
+
+//         const findChannel = (id: string) => guild.channels.cache.find(channel => channel.id === id);
+
+//         const dbChannel = db.get('usersThatCreatedCalls').find({ channelId: findChannel(user?.channelId)?.id }).value();
+
+//         !!dbChannel && findChannel(user?.channelId)?.members.size === 0 
+//             && db.get('usersThatCreatedCalls').remove({ channelId: findChannel(user?.channelId)?.id }).write();
+            
+//         findChannel(user?.channelId)?.members.size === 0 && findChannel(user?.channelId)?.delete();
+//     });
+//     usersDB2.forEach(user => {
+//         if(!user) return;
+
+//         const findChannel = (id: string) => guild.channels.cache.find(channel => channel.id === id);
+        
+//         const dbChannel = db.get('boostersThatCreatedCalls').find({ channelId: findChannel(user?.channelId)?.id }).value();
+
+//         !!dbChannel && findChannel(user?.channelId)?.members.size === 0 
+//             && db.get('boostersThatCreatedCalls').remove({ channelId: findChannel(user?.channelId)?.id }).write();
+            
+//         findChannel(user?.channelId)?.members.size === 0 && findChannel(user?.channelId)?.delete();
+//     });
+// }
 
 /* Types */
 type IUserDb = { userId: string, channelId: string } | undefined

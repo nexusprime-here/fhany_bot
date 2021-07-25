@@ -5,6 +5,6 @@ module.exports = {
     name: 'versao',
     description: 'Mostra a versão atual do bot',
     execute(message: Message) {
-        message.channel.send('v' + version)
+        message.channel.send({ content: 'v' + version, components: [] });
     }
 }
