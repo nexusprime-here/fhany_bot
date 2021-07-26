@@ -15,16 +15,13 @@ module.exports = {
 
 function execute(client: Client, config: IConfig) {
     const suggestionChannel = client.channels.cache.find(channel => channel.id === config.suggestion.channel);
-    
     if(!suggestionChannel || !suggestionChannel.isText() || suggestionChannel.isThread()) return;
 
     const suggestionsCache: ISuggestionMessage[] = db.get('suggestionsCache').value();
-
-    deleteAllOldMessages(suggestionChannel); 
     let actionsCache: number = 0;
 
+    deleteAllOldMessages(suggestionChannel); 
     reloadSuggestions(suggestionsCache, suggestionChannel, actionsCache);
-
 
     client.on('messageCreate', async message => {
         if(message.channel.id !== config.suggestion.channel) return;
@@ -33,7 +30,7 @@ function execute(client: Client, config: IConfig) {
 
         actionsCache++;
 
-        saveSuggestionInSuggestionsCache(message);
+        saveMessageInSuggestionsCache(message);
         await deleteCommandMessage(message);
     });
     
@@ -55,13 +52,30 @@ function execute(client: Client, config: IConfig) {
         else if(interaction.customId === 'dislike') setRate('-', findMessage.id, interaction.user.id);
         else return;
 
-        interaction.reply({ embeds: [embed.success], ephemeral: true })
+        interaction.reply({ embeds: [embed.success], ephemeral: true });
     })
+
+    setInterval(() => actionsCache > 0 && reloadSuggestions(suggestionsCache, suggestionChannel, actionsCache), 1000 * 60 * 10);
+
+    const date = new Date();
+    if(date.getHours() === 0) {
+        updateTimeRemainingOfSuggestions(suggestionsCache);
+        deleteSuggestionsWithoutTimeRemaining(suggestionsCache);
+    }
 }
 
 
 /* Functions */
-function saveSuggestionInSuggestionsCache(suggestionMessage: Message) {
+function deleteSuggestionsWithoutTimeRemaining(cache: ISuggestionMessage[]) {
+    db.get('suggestionsCache').remove({ daysRemaining: 0 }).write();
+}
+function updateTimeRemainingOfSuggestions(suggestionsCache: ISuggestionMessage[]) {
+    suggestionsCache.forEach(suggestion => {
+        const thisSuggestion = db.get('suggestionsCache').find({ id: suggestion.id });
+        thisSuggestion.assign({ daysRemaining: thisSuggestion.value().daysRemaining - 1 }).write();
+    });
+}
+function saveMessageInSuggestionsCache(suggestionMessage: Message) {
     if(!suggestionMessage.member) return;
 
     db.get('suggestionsCache').push({
@@ -74,7 +88,8 @@ function saveSuggestionInSuggestionsCache(suggestionMessage: Message) {
         },
         accept: false,
         likes: [],
-        dislikes: []
+        dislikes: [],
+        daysRemaining: 7
     }).write();
 }
 async function deleteCommandMessage(message: Message) {
@@ -153,22 +168,5 @@ export interface ISuggestionMessage {
     accept: boolean;
     likes: string[];
     dislikes: string[];
+    daysRemaining: number;
 }
-
-/* 
-const row = new MessageActionRow().addComponents(
-        new MessageButton()
-            .setEmoji('👍')
-            .setStyle("SUCCESS")
-            .setCustomId('a'),
-            
-            new MessageButton()
-            .setEmoji('👎')
-            .setStyle("DANGER")
-            .setCustomId('b')
-    );
-
-    for (let count = 0; count < 6; count++) {
-        channel.send({ content: 'oi', components: [row] })
-    }
-*/

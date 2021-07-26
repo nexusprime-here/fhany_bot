@@ -1,4 +1,4 @@
-import { Client, Message } from "discord.js";
+import { Client, Message, MessageActionRow, MessageButton } from "discord.js";
 import { IConfig } from "..";
 
 import embed from '../embeds/commands.sendNotice';
@@ -10,7 +10,7 @@ module.exports = {
     description: '',
     args: true,
     async execute(message: Message, args: string[], client: Client, config: IConfig) {
-        if(!await isStaffer(message.guild?.members.cache.get(message.author.id), config)) return message.reply(embed.notStaff);
+        if(!await isStaffer(message.guild?.members.cache.get(message.author.id), config)) return message.reply({ embeds: [embed.notStaff] });
 
         const [ userCategory, ...content ] = args;
 
@@ -32,8 +32,8 @@ module.exports = {
         if(selectedCategory.length < 1) return message.reply({ embeds: [embed.wrongCategory] });
         if(content.length < 1) return message.reply({ embeds: [embed.missingContent] });
 
-        const admChannel = message.guild?.channels.cache.get(config.sendNotice.admChannel);
-        const noticeChannel = message.guild?.channels.cache.get(config.sendNotice.noticeChannel);
+        const admChannel = message.guild?.channels.cache.find(channel => channel.id === config.sendNotice.admChannel);
+        const noticeChannel = message.guild?.channels.cache.find(channel => channel.id === config.sendNotice.noticeChannel);
         const selectedChannel = (() => {
             const member = message.guild?.members.cache.get(message.author.id);
 
@@ -41,13 +41,26 @@ module.exports = {
         })();
 
         const sucessEmbed = embed.notice(selectedCategory[0], content.join(' '), message.author);
-        selectedChannel?.isText() && selectedChannel.send(selectedChannel === noticeChannel ? '@everyone' : '', { embeds: sucessEmbed })
+
+        const row = new MessageActionRow().addComponents(
+            new MessageButton()
+                .setLabel(`Aceitar`)
+                .setStyle("SUCCESS")
+                .setCustomId('like'),
+                
+            new MessageButton()
+                .setLabel('Rejeitar')
+                .setStyle("DANGER")
+                .setCustomId('dislike')
+        );
+
+        selectedChannel?.isText() && selectedChannel.send({ content: selectedChannel === noticeChannel ? '@everyone' : '', embeds: [sucessEmbed], components: [row] })
             .then(msg => {
                 if(selectedChannel !== admChannel) return;
 
                 db.get('noticesNotAnswered').push({ authorId: message.author.id, messageId: msg.id, embed: sucessEmbed }).write()
-                message.reply(embed.sucess);
+                message.reply({ embeds: [embed.sucess] });
             })
-            .catch(() => message.reply(embed.error));
+            .catch(() => message.reply({ embeds: [embed.error] }));
     }
 }

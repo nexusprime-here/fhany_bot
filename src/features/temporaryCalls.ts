@@ -134,37 +134,6 @@ async function fetchControllerMessage(channel: NewsChannel | TextChannel) {
 
     return message;
 }
-// function removeEmptyCalls(guild: Guild | undefined) {
-//     if(!guild) return
-
-//     const usersDB: IUserDb[] = db.get('usersThatCreatedCalls').value();
-//     const usersDB2: IUserDb[] = db.get('boostersThatCreatedCalls').value();
-
-//     usersDB.forEach(user => {
-//         if(!user) return;
-
-//         const findChannel = (id: string) => guild.channels.cache.find(channel => channel.id === id);
-
-//         const dbChannel = db.get('usersThatCreatedCalls').find({ channelId: findChannel(user?.channelId)?.id }).value();
-
-//         !!dbChannel && findChannel(user?.channelId)?.members.size === 0 
-//             && db.get('usersThatCreatedCalls').remove({ channelId: findChannel(user?.channelId)?.id }).write();
-            
-//         findChannel(user?.channelId)?.members.size === 0 && findChannel(user?.channelId)?.delete();
-//     });
-//     usersDB2.forEach(user => {
-//         if(!user) return;
-
-//         const findChannel = (id: string) => guild.channels.cache.find(channel => channel.id === id);
-        
-//         const dbChannel = db.get('boostersThatCreatedCalls').find({ channelId: findChannel(user?.channelId)?.id }).value();
-
-//         !!dbChannel && findChannel(user?.channelId)?.members.size === 0 
-//             && db.get('boostersThatCreatedCalls').remove({ channelId: findChannel(user?.channelId)?.id }).write();
-            
-//         findChannel(user?.channelId)?.members.size === 0 && findChannel(user?.channelId)?.delete();
-//     });
-// }
 
 /* Types */
 type IUserDb = { userId: string, channelId: string } | undefined

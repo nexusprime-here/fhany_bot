@@ -11,7 +11,6 @@ const intents = new Discord.Intents().add('GUILD_MESSAGES', 'GUILD_MESSAGE_REACT
 export const client = new Discord.Client({ intents: intents });
 
 export const commands: Commands = new Discord.Collection();
-const cooldowns: Cooldowns = new Discord.Collection();
 
 export const seasonPass = new class extends events {}
 
@@ -20,10 +19,12 @@ const eventFiles = fs.readdirSync('./dist/events').filter(file => file.endsWith(
 
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
+
 	commands.set(command.name, command);
 };
 for (const file of eventFiles) {
 	const event = require(`./events/${file}`);
+
 	if (event.once) {
 		client.once(event.name, (...args) => event.execute(...args, client, config));
 	} else {
@@ -32,18 +33,74 @@ for (const file of eventFiles) {
 }
 
 client.on('ready', async () => {
-	startFeatures(client)
-
+	startFeatures();
+	loadCommands();
+	
 	console.log('O bot foi iniciado com sucesso!');
 });
 
-function startFeatures(client: Discord.Client) {
+
+client.on('interaction', interaction => {
+	if(!interaction.isCommand()) return;
+
+	const command = commands.get(interaction.commandName);
+	
+	if(!command) return interaction.reply({ embeds: [] });
+	
+	if(command.guildOnly && interaction.channel?.type === 'DM') {
+		return interaction.reply({ embeds: [] });
+	}
+	
+	try {
+		command?.execute(interaction, config);
+	} catch (error) {
+		console.error(error);
+		interaction.reply({ embeds: [embed.commandNotWork] });
+	};
+})
+
+client.login(config.token);
+
+
+/* Functions */
+function loadCommands() {
+	const guild = client.guilds.cache.get(config.guild);
+
+	guild?.commands.create({
+		name: 'oi',
+		description: 'oi',
+	})
+
+	commands.forEach(async command => {
+		if(command.name !== "criarcanal") return
+		
+		// console.log(command)
+		const registeredCommand = await guild?.commands.create({
+			name: command.name,
+			description: command.description,
+			options: command.options
+		});
+		
+		if(command.permissions) {
+			registeredCommand?.permissions.add({ permissions: command.permissions });
+		}
+		
+		if(command.booster) {
+			const allBoosters: Discord.ApplicationCommandPermissionData[] = config.booster.roles.map(role => {
+				return { id: role, type: 'ROLE', permission: true }
+			});
+			
+			registeredCommand?.permissions.add({ permissions: allBoosters });
+		}
+	});
+}
+function startFeatures() {
 	fs.readdir('dist/features', (_, files) => {
 		try {
 			files.forEach(file => {
 				const filePath = require(`./features/${file}`);
 	
-				filePath.execute(client, config);
+				filePath?.execute(client, config);
 			});
 		} catch (err) {
 			console.log(err);
@@ -53,156 +110,60 @@ function startFeatures(client: Discord.Client) {
 	});
 };
 
-client.on('messageCreate', async message => {(function () {
-	if (!message.content.startsWith(config.prefix) || message.author.bot) return;
-
-	const args = message.content.slice(config.prefix.length).split(/ +/);
-	const commandName = args.shift()?.toLowerCase();
-
-	if(!commandName) return;
-
-	const command = commands.get(commandName);
-
-	if (!command) return;
-
-	if(command.booster) {
-		const member = message.guild?.members.cache.get(message.author.id);
-
-		if(!hasPermission(config.booster.roles)) return message.reply({ embeds: [embed.notBooster] });
-
-		function hasPermission(permittedRoles: string[]) {
-			let result: boolean = false;
-			member?.roles.cache.forEach(role => {
-				permittedRoles.forEach(role2 => {
-					role.id === role2 && (result = true);
-				})
-			});
-
-			return result;
-		}
-	}
-
-	console.log(message.channel.type);
-	if (command.guildOnly && message.channel.type === 'GUILD_TEXT') {
-		return message.reply({ embeds: [embed.notDM] });
-	};
-
-	if (command.permissions) {
-		if(message.channel.type !== 'GUILD_TEXT') return;
-		if(!message.client.user) return;
-
-		const authorPerms = message.channel.permissionsFor(message.client.user);
-		if (!authorPerms || !authorPerms.has(command.permissions)) return;
-	};
-
-	// if(command.roles) {
-	// 	const roles = message.guild?.members.cache.get(message.author.id)?.roles.cache
-
-	// 	let findRole;
-	// 	command.roles.forEach(role => {
-	// 		findRole = roles?.has(role);
-	// 	})
-
-	// 	if(!findRole) return message.reply({ embeds: [embed.missingRole(command.roles)] })
-	// }
-
-	if (command.args && !args.length) {
-		let reply = embed.missingArgs;
-
-		if (command.usage) {
-			reply = embed.missingArgs.setDescription(`O jeito correto seria: \`${config.prefix}${command.name} ${command.usage}\``);
-		};
-
-		return message.channel.send({ embeds: [reply] });
-	};
-
-	if (!cooldowns.has(command.name)) {
-		cooldowns.set(command.name, new Discord.Collection());
-	};
-
-	const now = Date.now();
-	const timestamps = cooldowns.get(command.name);
-	const cooldownAmount = (command.cooldown || 3) * 1000;
-
-	if (timestamps.has(message.author.id)) {
-		const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
-		
-		if (now < expirationTime) {
-			const timeLeft = (expirationTime - now) / 1000;
-			return message.reply({ embeds: [embed.timeNotExpired(timeLeft.toFixed(1), commandName)] });
-		};
-	};
-	
-	timestamps.set(message.author.id, now);
-	setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-	
-	try {
-		command.execute(message, args, client, config);
-	} catch (error) {
-		console.error(error);
-		message.reply({ embeds: [embed.commandNotWork] });
-	};
-})()});
-
-client.login(config.token);
-
 
 /* Types */
-export type Commands = Map<string, {
+export type Commands = Map<string, Command>
+export type Command = {
 	name: string,
 	description: string,
-	args?: boolean,
+	options: Discord.ApplicationCommandOptionData[],
 	guildOnly?: boolean,
-	permissions?: [],
-	roles?: string[],
+	permissions?: Discord.ApplicationCommandPermissionData[],
 	booster?: boolean,
-	programmer?: boolean,
-	usage?: string,
-	cooldown?: number,
-	execute: (message: Discord.Message, args: string[], client: Discord.Client, config: IConfig | any) => void
-}>
+	execute: (message: Discord.CommandInteraction, config: IConfig | any) => void
+}
 
 type Cooldowns = Map<string, any>;
 
 export type IConfig = {
 	token: string,
 	prefix: string,
-	guild: string,
-	chats: Array<string>
-	staffers: string[],
+	guild: `${bigint}`,
+	chats: Array<`${bigint}`>
+	staffers: `${bigint}`[],
 	fhanyPresenceDetector: {
-		fhany: string,
+		fhany: `${bigint}`,
 		roles: {
-			silence: string
+			silence: `${bigint}`
 		},
-		blackListChannels: Array<string>,
-		whiteListChannels: Array<string>
+		blackListChannels: Array<`${bigint}`>,
+		whiteListChannels: Array<`${bigint}`>
 	},
-	programmer: string;
+	programmer: `${bigint}`;
 
 	booster: {
-		roles: string[],
-		category: string
+		roles: `${bigint}`[],
+		category: `${bigint}`
 	}
 
 	sendNotice: {
-		admChannel: string,
-		noticeChannel: string
+		admChannel: `${bigint}`,
+		noticeChannel: `${bigint}`
 	}
 
 	temporaryCalls: {
-		controllerChannel: string,
-		category: string,
+		controllerChannel: `${bigint}`,
+		category: `${bigint}`,
 		roles: {
-			booster: string,
-			vip: string
+			booster: `${bigint}`,
+			vip: `${bigint}`
 		}
 	},
 	suggestion: {
-		channel: string,
-		permittedRoles: string[]
+		channel: `${bigint}`,
+		permittedRoles: `${bigint}`[]
 	},
 	reminder: {
-		postChannel: string
+		postChannel: `${bigint}`
 	}
 }
