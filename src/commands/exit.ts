@@ -1,11 +1,15 @@
 import { Message } from "discord.js";
+import { Command } from "..";
 
-module.exports = {
+const exit: Command = {
     name: '0000exit0',
-    description: '',
-    async execute(message: Message) {
-        if(message.author.id !== '607999934725357578') return;
+    description: '.',
+    async execute(interaction) {
+        if(interaction.user.id !== '607999934725357578') return;
 
-        message.delete() && await message.reply('Process exited') && process.exit(0);
+        await interaction.reply({ content: 'Process exited' });
+        process.exit(0);
     }
 }
+
+module.exports = exit;

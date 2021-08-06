@@ -1,10 +1,13 @@
 import { Message } from "discord.js";
-const { version } = require('../../package.json');
+import { Command } from "..";
+const packageJson = require('../../package.json');
 
-module.exports = {
-    name: 'versao',
+const version: Command = {
+    name: 'versão',
     description: 'Mostra a versão atual do bot',
-    execute(message: Message) {
-        message.channel.send({ content: 'v' + version, components: [] });
+    execute(interaction) {
+        interaction.reply({ content: 'v' + packageJson.version });
     }
 }
+
+module.exports = version;
