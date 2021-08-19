@@ -1,11 +1,14 @@
 import { Message } from "discord.js";
-import { Command } from "..";
+import { ICommand } from "../handlers/commands";
 
-const exit: Command = {
-    name: '0000exit0',
-    description: '.',
+const exit: ICommand = {
+    active: true,
+    name: 'exit',
+    description: 'Termina o processo, só pode ser usado pelo Criador.',
+    forRoles: 'everyone',
+    guildOnly: false,
     async execute(interaction) {
-        if(interaction.user.id !== '607999934725357578') return;
+        if(interaction.user.id !== '607999934725357578') return ;
 
         await interaction.reply({ content: 'Process exited' });
         process.exit(0);

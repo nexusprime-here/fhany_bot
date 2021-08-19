@@ -1,14 +1,18 @@
-import { Command, IConfig } from "..";
+import { IConfig } from "..";
 import db from '../database';
 import isStaffer from "../utils/isStaffer";
+import Discord from 'discord.js';
 
 import embed from '../embeds/commands.boosterCall';
-import { CommandInteraction, GuildMember, Role, VoiceChannel } from "discord.js";
+import { CommandInteraction, GuildMember, MessageActionRow, MessageButton, Role, VoiceChannel } from "discord.js";
+import { ICommand } from "../handlers/commands";
 
-const boosterCall: Command = {
+const boosterCall: ICommand = {
+    active: true,
     name: 'canalbooster',
     description: 'Para booster somente, cria/edita seu canal booster',
-    booster: true,
+    forRoles: 'booster',
+    guildOnly: true,
     options: [
         {
             name: 'definir',
@@ -99,30 +103,46 @@ const boosterCall: Command = {
         }
     ],
     async execute(interaction, config) {
-        const subCommand = interaction.options.getSubCommand();
+        const subCommand = interaction.options.getSubcommand();
         
         if(subCommand === 'definir') {
-            const voiceChannel = getBoosterCall(interaction);
-            if(!voiceChannel) return interaction.reply({ embeds: [embed.notCreatedChannel] });
+            const voiceChannelOfUser = getBoosterCallInDatabase(interaction);
+            if(!voiceChannelOfUser) return interaction.reply({ embeds: [embed.notCreatedChannel] });
 
-            const userPermission = interaction.options.get('permissão')?.value;
-            const boolean = interaction.options.get('modo')?.value === true ? true : false;
-            const taggedUser = interaction.options.get('membro')?.user;
-            
-            if(!taggedUser) return;
-            
-            const user = interaction.guild?.members.cache.get(taggedUser.id);
-            if(await isStaffer(user, config)) return interaction.reply({ embeds: [embed.isModerator] });
+            const selectedPermission = <string>interaction.options.get('permissão')?.value;
+            const boolean = interaction.options.get('modo')?.value === 'true' ? true : false;
+            const taggedUser = <Discord.User>interaction.options.get('membro')?.user;
+            const member = <Discord.GuildMember>interaction.guild?.members.cache.get(taggedUser.id);
+
+            if(await isStaffer(member, config)) return interaction.reply({ embeds: [embed.isModerator] });
         
-            if(!userPermission || typeof userPermission !== 'string') return;
-            await voiceChannel.permissionOverwrites.edit(taggedUser.id, {
-                [userPermission]: boolean === true,
+            await voiceChannelOfUser.permissionOverwrites.edit(taggedUser.id, {
+                [selectedPermission]: boolean,
             });
-            
-            interaction.reply({ embeds: [embed.sucessMessage(taggedUser.id, userPermission, boolean)] });
-            
+
+            await interaction.reply({ embeds: [embed.successMessage(taggedUser.id, selectedPermission, boolean)] });
+
+            if(selectedPermission === 'STREAM' && isStreaming(member)) {
+                const row = new MessageActionRow().addComponents(
+                    new MessageButton()
+                        .setLabel(`Ok`)
+                        .setStyle("PRIMARY")
+                        .setCustomId('accept')
+                )
+
+                const followUp = <Discord.Message>await interaction.followUp({ embeds: [embed.isStreaming], components: [row] });
+
+                followUp.awaitMessageComponent({ filter: i => i.isButton() && i.customId === 'accept', time: 1000 * 60 })
+                    .then(interaction => {
+                        member?.voice.setChannel(null);
+                        
+                        interaction.reply({ embeds: [embed.removedStream] });
+                    })
+                    .catch(() => followUp.delete());
+            }
+
         } else if(subCommand === 'deletar') {
-            const voiceChannel = getBoosterCall(interaction);
+            const voiceChannel = getBoosterCallInDatabase(interaction);
             if(!voiceChannel) return interaction.reply({ embeds: [embed.notCreatedChannel] });
 
             !voiceChannel.deleted && voiceChannel.delete();
@@ -151,14 +171,20 @@ const boosterCall: Command = {
             
             interaction.reply({ embeds: [embed.channelCreated(type === 'privado', channel.id)] })
             waitForUsersToJoin(channel, interaction.user.id);
-
         }
     }
 }
 
 
 /* Functions */
-function getBoosterCall(interaction: CommandInteraction) {
+function isStreaming(member: GuildMember | undefined) {
+    const activities = member?.presence?.activities.filter(activity => activity.type === 'STREAMING')
+
+    if(!activities || activities.length === 0) return false;
+
+    return true;
+}
+function getBoosterCallInDatabase(interaction: CommandInteraction) {
     const user = db.get('boostersThatCreatedCalls').find({ userId: interaction.user.id }).value();
 
     const call = interaction.guild?.channels.cache.get(user?.channelId);
@@ -168,8 +194,10 @@ function getBoosterCall(interaction: CommandInteraction) {
 async function createChannelVoice(type: 'publico' | 'privado', everyone: Role | undefined, channelName: string, interaction: CommandInteraction, config: IConfig) {
     if(!everyone) return;
 
+    console.log(config.commands.boosterCall.category)
+
     const channel = await interaction.guild?.channels.create(`❖ ${channelName}`, {
-        parent: config.booster.category,
+        parent: config.commands.boosterCall.category,
         type: 'GUILD_VOICE',
         permissionOverwrites: type === 'publico' ? [
             { 
@@ -193,7 +221,7 @@ async function createChannelVoice(type: 'publico' | 'privado', everyone: Role | 
         ]
     });
 
-    config.staffers.forEach((staff: `${bigint}`) => channel?.permissionOverwrites.edit(staff, { 
+    config.roles.staffers.forEach(staff => channel?.permissionOverwrites.edit(staff, { 
         'VIEW_CHANNEL': true, 'CONNECT': true 
     }));
 
