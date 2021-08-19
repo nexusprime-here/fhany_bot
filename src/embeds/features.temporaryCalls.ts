@@ -1,4 +1,4 @@
-import { globalCommon, globalError, globalSucess } from "./global";
+import { globalCommon, globalError, globalSuccess } from "./global";
 
 export default {
     alreadyOnCall: globalError()
@@ -10,7 +10,7 @@ export default {
     error: globalError()
         .setDescription('Não consegui criar o Canal de Voz, tente novamente mais tarde.'),
 
-    sucess: globalSucess()
+    success: globalSuccess()
         .setDescription('Seu canal foi criado com sucesso!'),
 
     controllerMessage: globalCommon()

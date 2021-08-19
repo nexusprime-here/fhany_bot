@@ -1,68 +1,101 @@
-import { Channel, Client, Guild, GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed, MessageReaction, MessageSelectMenu, MessageSelectOptionData, NewsChannel, PartialUser, SelectMenuInteraction, TextChannel, User, VoiceChannel } from "discord.js";
+import { 
+    Guild, GuildMember, MessageActionRow, 
+    MessageButton, MessageSelectMenu, MessageSelectOptionData, 
+    NewsChannel, TextChannel, VoiceChannel 
+} from "discord.js";
 import { IConfig } from "..";
-import database from '../database';
+import db from '../database';
 
 import embed from '../embeds/features.temporaryCalls'
+import { IFeature } from "../handlers/features";
 
-const db: any = database; // error in types of lowdb
-
-module.exports = {
+const temporaryCalls: IFeature = {
+    active: true,
     name: 'Temporary Calls',
     description: 'Cria um canal de voz que quando ninguém está usando, ela é excluida.',
-    execute
+    async execute(client, config, guild) {
+        const controllerChannel = <TextChannel>guild?.channels.cache.get(config.features.temporaryCalls.controllerChannel);
+    
+        removeEmptyCalls(guild);
+    
+        const acceptedCategories = {
+            '🛸┇ Arcade': 'Feitos para máquinas de arcade.', 
+            '🍄┇ Plataforma': 'Personagens se move horizontalmente.', 
+            '⚽┇ Esporte': 'Simulam a prática de esportes.', 
+            '🚗┇ Corrida': 'Competição de corrida usando veículos.', 
+            '👹┇ RPG': 'São jogos que se assimilam aos RPGs de mesa.', 
+            '♟┇ Estratégia': 'Enfatiza habilidade de planejamento para ganhar.', 
+            '⚔┇ Aventura': 'O jogador vive uma história com exploração.', 
+            '🔫┇ FPS/TPS': 'O Objetivo é acertar alvos com armas de Fogo.'
+        }
+    
+        let controllerMessage = await fetchControllerMessage(controllerChannel);
+        if(!controllerMessage) controllerMessage = await createControllerMessage(controllerChannel, acceptedCategories);
+    
+        client.on('interactionCreate', async interaction => {
+            if (!interaction.isSelectMenu() || interaction.customId !== 'controllerMenu') return;
+            
+            const userInDatabase: IUserDb = db.get('usersThatCreatedCalls').find({ userId: interaction.user.id }).value();
+            
+            if(!guild) return;
+            if(userInDatabase) return await interaction.reply({ embeds: [embed.alreadyCreatedCall], ephemeral: true });
+            if(userAlreadyOnCall(guild, interaction.user.id)) return interaction.reply({ embeds: [embed.alreadyOnCall], ephemeral: true });
+            
+            const createdChannel = await createChannel(`彡${interaction.values[0]}`, interaction.user.id, guild, config);
+            if(!createdChannel) return interaction.reply({ embeds: [embed.error], ephemeral: true });
+            
+            const invite = await createdChannel.createInvite({ maxUses: 1 })
+            const row = new MessageActionRow().addComponents(
+                new MessageButton()
+                    .setLabel('Entre no Canal de Voz')
+                    .setURL(invite.url)
+                    .setStyle('LINK')
+            );
+    
+            interaction.reply({ embeds: [embed.success], ephemeral: true, components: [row] });
+    
+            waitForUsersToJoin(createdChannel, interaction.user.id, guild);
+        });
+    }
 }
 
-async function execute(client: Client, config: IConfig) {
-    const guild = client.guilds.cache.find(guild => guild.id === config.guild);
-    const controllerChannel = guild?.channels.cache.find(channel => channel.id === config.temporaryCalls.controllerChannel);
-
-    // removeEmptyCalls(guild);
-
-    if(!controllerChannel || controllerChannel.isThread() || !controllerChannel.isText()) return;
-
-    const acceptedCategories = {
-        '🛸┇ Arcade': 'Feitos para máquinas de arcade.', 
-        '🍄┇ Plataforma': 'Personagens se move horizontalmente.', 
-        '⚽┇ Esporte': 'Simulam a prática de esportes.', 
-        '🚗┇ Corrida': 'Competição de corrida usando veículos.', 
-        '👹┇ RPG': 'São jogos que se assimilam aos RPGs de mesa.', 
-        '♟┇ Estratégia': 'Enfatiza habilidade de planejamento para ganhar.', 
-        '⚔┇ Aventura': 'O jogador vive uma história com exploração.', 
-        '🔫┇ FPS/TPS': 'O Objetivo é acertar alvos com armas de Fogo.'
-    }
-
-    let controllerMessage = await fetchControllerMessage(controllerChannel);
-    if(!controllerMessage) controllerMessage = await createControllerMessage(controllerChannel, acceptedCategories);
-
-    client.on('interactionCreate', async interaction => {
-        if (!interaction.isSelectMenu() || interaction.customId !== 'controllerMenu') return;
-        
-        const userInDatabase: IUserDb = db.get('usersThatCreatedCalls').find({ userId: interaction.user.id }).value();
-        
-        if(!guild) return;
-        if(userInDatabase) return console.log(await interaction.reply({ embeds: [embed.alreadyCreatedCall], ephemeral: true }));
-        if(userAlreadyOnCall(guild, interaction.user.id)) return interaction.reply({ embeds: [embed.alreadyOnCall], ephemeral: true });
-        
-        const createdChannel = await createChannel(`彡${interaction.values[0]}`, interaction.user.id, guild, config);
-        if(!createdChannel) return interaction.reply({ embeds: [embed.error], ephemeral: true });
-        
-        const invite = await createdChannel.createInvite({ maxUses: 1 })
-        const row = new MessageActionRow().addComponents(
-            new MessageButton()
-            .setLabel('Entre no Canal de Voz')
-            .setURL(invite.url)
-            .setStyle('LINK')
-            );
-
-        interaction.reply({ embeds: [embed.sucess], ephemeral: true, components: [row] });
-
-        waitForUsersToJoin(createdChannel, interaction.user.id, guild);
-    })
-    
-};
+module.exports = temporaryCalls;
 
 
 /* Functions */
+function removeEmptyCalls(guild: Guild | undefined) {
+    if(!guild) return;
+
+    const usersInDb: IUserDb[] = db.get('usersThatCreatedCalls').value();
+    const usersInDbBoosters: IUserDb[] = db.get('boostersThatCreatedCalls').value();
+
+    const findChannel = (id: string) => guild.channels.cache.get(id);
+
+    usersInDb.forEach(user => {
+        if(!user) return;
+
+        const channelInDb = db.get('usersThatCreatedCalls').find({ channelId: findChannel(user.channelId)?.id }).value();
+        
+        const foundChannel: any = findChannel(user.channelId);
+
+        !!channelInDb && foundChannel.members.size === 0
+            && db.get('usersThatCreatedCalls').remove({ channelId: foundChannel.id }).write();
+            
+        foundChannel.members.size === 0 && foundChannel.delete();
+    });
+    usersInDbBoosters.forEach(user => {
+        if(!user) return;
+
+        const channelInDb = db.get('boostersThatCreatedCalls').find({ channelId: findChannel(user?.channelId)?.id }).value();
+
+        const foundChannel: any = findChannel(user.channelId);
+
+        !!channelInDb && foundChannel.members.size === 0 
+            && db.get('boostersThatCreatedCalls').remove({ channelId: foundChannel.id }).write();
+            
+        foundChannel.members.size === 0 && foundChannel.delete();
+    });
+}
 async function waitForUsersToJoin(channel: VoiceChannel | undefined, userId: string, guild: any, lol: boolean = false) {
     if(channel === undefined) return;
 
@@ -82,12 +115,13 @@ async function waitForUsersToJoin(channel: VoiceChannel | undefined, userId: str
 }
 async function createChannel(channelName: string, userId: string, guild: Guild, config: IConfig) {
     if(!guild) return;
-    const parent = guild.channels.cache.find(channel => channel.id === config.temporaryCalls.category);
+    const parent = guild.channels.cache.get(config.features.temporaryCalls.category);
+
     const everyone = guild.roles.everyone.id;
     
     const channel = await guild.channels.create(channelName, { 
         type: 'GUILD_VOICE', 
-        parent: parent, 
+        parent: parent?.id,
         permissionOverwrites: [
             {
                 id: everyone,
@@ -101,7 +135,7 @@ async function createChannel(channelName: string, userId: string, guild: Guild, 
     return channel;
 };
 function userAlreadyOnCall(guild: Guild, memberId: string) {
-    const member = guild.members.cache.find(member => member.id === memberId);
+    const member = guild.members.cache.get(memberId);
     if(!member) return;
 
     return !!member.voice.channel;
@@ -111,8 +145,6 @@ async function createControllerMessage(channel: NewsChannel | TextChannel, categ
     
     const options: MessageSelectOptionData[] = [];
     Object.entries(categories).forEach((category: any) => options.push({ label: category[0], value: category[0], description: category[1] }));
-
-    console.log(options);
 
     const row = new MessageActionRow().addComponents(
         new MessageSelectMenu()

@@ -1,12 +1,17 @@
-import { Client, CommandInteraction, GuildChannel, Message, TextChannel } from "discord.js";
-import { Command } from "..";
+import { ApplicationCommandOptionChoice, Client, Message, TextChannel } from "discord.js";
 import db from "../database";
 
 import embed from '../embeds/commands.suggestion';
+import { ISuggestionMessage } from "../features/suggestion";
+import { ICommand } from "../handlers/commands";
 
-const suggestion: Command = {
+const allMessagesList = fetchAllMessagesList();
+const suggestion: ICommand = {
+    active: true,
     name: 'sugestao',
     description: 'Com este comando você pode aceitar ou rejeitar uma sugestão.',
+    forRoles: 'staff',
+    guildOnly: true,
     options: [
         {
             name: 'opção',
@@ -26,18 +31,24 @@ const suggestion: Command = {
         },
         {
             name: 'sugestão',
-            description: 'Digite o id da sugestão',
+            description: 'Selecione a sugestão',
             type: 'STRING',
+            choices: allMessagesList,
+            required: true
         }
     ],
-    async execute(interaction) {
-        const option = interaction.options.get('opção')?.value;
-        const suggestion = interaction.options.get('sugestão')?.value;
-        const channel = interaction.channel;
+    async execute(interaction, config) {
+        const option = <'accept' | 'reject'>interaction.options.get('opção')?.value;
+        const suggestionId = <`${bigint}`>interaction.options.get('sugestão')?.value;
 
-        if(typeof suggestion !== 'string' || channel?.type !== 'GUILD_TEXT') return;
-        const suggestionMessage = await findMessageTyped(`${BigInt(suggestion)}`, channel);
+        if(interaction.channel?.type !== 'GUILD_TEXT') return;
 
+        const suggestionChannel = <TextChannel | undefined>interaction.guild?.channels.cache.get(config.channels.suggestion);
+        if(!suggestionChannel) return;
+
+        const suggestionMessage = await findMessageTyped(suggestionId, suggestionChannel);
+        if(!suggestionMessage) return;
+        
         if(option === 'accept') {
             const id = suggestionMessage.embeds[0].footer?.text;
             if(!id) return;
@@ -46,7 +57,7 @@ const suggestion: Command = {
             sendDataForDB(id);
             alertSuggestionAuthor(id, interaction.client, true);
 
-            interaction.reply({ embeds: [embed.success(true)], ephemeral: true});
+            interaction.reply({ embeds: [embed.success(true)], ephemeral: true });
         } else if(option === 'reject') {
             const id = suggestionMessage.embeds[0].footer?.text;
             if(!id) return;
@@ -63,8 +74,11 @@ module.exports = suggestion;
 
 
 /* Functions */
-async function findMessageTyped(idOfMessage: `${bigint}`, channel: TextChannel) {
-    return await channel.messages.fetch(idOfMessage);
+async function findMessageTyped(idOfMessage: string, channel: TextChannel) {
+    console.log(await channel.messages.fetch())
+    return (await channel.messages.fetch()).filter(message => 
+        message.embeds[0]?.footer?.text === idOfMessage
+    ).first();
 }
 function sendDataForDB(id: string | undefined) {
     if(!id) return;
@@ -87,4 +101,20 @@ function deleteSuggestionMessage(referenceMessage: Message) {
     db.get('suggestionsCache').remove({ id: referenceMessage.embeds[0].footer?.text }).write()
 
     referenceMessage.delete();
+}
+function fetchAllMessagesList() {
+    const allMessagesInDatabase: ISuggestionMessage[] = db.get('suggestionsCache').value();
+
+    const allMessagesMapped: ApplicationCommandOptionChoice[] = allMessagesInDatabase.map(message => {
+        const object = { 
+            name: `[${message.author.username}]: ${message.content}`, 
+            value: message.id 
+        }
+
+        object.name.length > 100 && (object.name = object.name.slice(0, 95) + '...');
+
+        return object;
+    });
+
+    return allMessagesMapped;
 }

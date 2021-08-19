@@ -151,10 +151,8 @@ const boosterCall: ICommand = {
             interaction.reply({ embeds: [embed.deleted] });
 
         } else if(subCommand === 'criar') {
-            const type = interaction.options.get('tipo')?.value;
-            const channelName = interaction.options.get('nome')?.value;
-    
-            if(!type || !channelName || typeof channelName !== 'string') return;
+            const type = <'publico' | 'privado'>interaction.options.get('tipo')?.value;
+            const channelName = <string>interaction.options.get('nome')?.value;
 
             const userInDatabase: IUserDb = db.get('boostersThatCreatedCalls').find({ userId: interaction.user.id }).value();
         
@@ -164,7 +162,6 @@ const boosterCall: ICommand = {
             if(!!userInDatabase) return interaction.reply({ embeds: [embed.alreadyCreated] });
             
             const everyone = interaction.guild?.roles.cache.get(interaction.guild.id)
-            if(type !== 'publico' && type !== 'privado') return interaction.reply({ embeds: [embed.typeNotExist] });
             
             const channel = await createChannelVoice(type, everyone, channelName, interaction, config);
             if(!channel) return

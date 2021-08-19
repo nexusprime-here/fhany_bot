@@ -1,6 +1,6 @@
 import { MessageEmbed } from "discord.js";
 import { ISuggestionMessage } from "../features/suggestion";
-import { globalCommon, globalError, globalSucess } from "./global";
+import { globalCommon, globalError, globalSuccess } from "./global";
 
 export default {
     messageSent: (userId: string) => new MessageEmbed()
@@ -36,6 +36,6 @@ export default {
     alreadyRated: globalError()
         .setDescription('Você já votou nessa mensagem.'),
 
-    success: globalSucess()
+    success: globalSuccess()
         .setDescription('Voto enviado!')
 }

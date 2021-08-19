@@ -1,169 +1,93 @@
-import Discord from 'discord.js'; import fs from 'fs'; import events from 'events';
+import chalk from 'chalk';
+const { name, version } = require('../package.json');
 
-import './config/config.json'; import './config/configtest.json'; // This imports is for the tsc compile all configs
+console.log(chalk.inverse(`Starting ${name}@${version} \n`));
 
-import embed from './embeds/src.index';
+import Discord from 'discord.js'; 
+import fs from 'fs'; 
+import nodeEvents from 'events'; 
 
-const configPath = process.argv[2] === 'test' ? './config/configtest.json' : './config/config.json';
-const config: IConfig = require(configPath);
+import { ICommand, ICommandWithPath } from './handlers/commands';
+import { IEvent } from './handlers/events';
+import { IFeature } from './handlers/features';
 
-const intents = new Discord.Intents().add('GUILD_MESSAGES', 'GUILD_MESSAGE_REACTIONS', 'GUILD_MESSAGE_TYPING', 'GUILDS', 'GUILD_VOICE_STATES')
-export const client = new Discord.Client({ intents: intents });
+const configPath = process.argv[2] === 'test' ? './config/configTest' : './config/config';
+const config: IConfig = require(configPath).default;
 
-export const commands: Commands = new Discord.Collection();
+const FLAGS = Discord.Intents.FLAGS;
+export const client = new Discord.Client({ intents: [
+	FLAGS.GUILD_MESSAGES,
+	FLAGS.DIRECT_MESSAGE_REACTIONS,
+	FLAGS.DIRECT_MESSAGE_TYPING,
+	FLAGS.GUILDS,
+	FLAGS.GUILD_VOICE_STATES,
+	FLAGS.GUILD_MEMBERS,
+	FLAGS.GUILD_PRESENCES
+]});
 
-export const seasonPass = new class extends events {}
+export const seasonPass = new class extends nodeEvents {}
 
-const commandFiles = fs.readdirSync('./dist/commands').filter((file: string) => file.endsWith('.js'));
-const eventFiles = fs.readdirSync('./dist/events').filter(file => file.endsWith('.js'));
+export const features: Map<string, IFeature> = new Discord.Collection();
+export const events: Map<string, IEvent> = new Discord.Collection();
+export const commands: Map<string, ICommand | ICommandWithPath> = new Discord.Collection();
 
-for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
-
-	commands.set(command.name, command);
-};
-for (const file of eventFiles) {
-	const event = require(`./events/${file}`);
-
-	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args, client, config));
-	} else {
-		client.on(event.name, (...args) => event.execute(...args, client, config));
-	}
-}
-
-client.on('ready', async () => {
-	startFeatures();
-	loadCommands();
+client.once('ready', async () => {
+	fs.readdirSync('./dist/handlers').forEach(file => {
+		const filePath: IHandler = require(`./handlers/${file}`);
+		
+		filePath(client, config);
+	});
 	
-	console.log('O bot foi iniciado com sucesso!');
+	console.log(chalk.black.bgGreen('\nReady!'));
 });
 
-
-client.on('interaction', interaction => {
-	if(!interaction.isCommand()) return;
-
-	const command = commands.get(interaction.commandName);
-	
-	if(!command) return interaction.reply({ embeds: [] });
-	
-	if(command.guildOnly && interaction.channel?.type === 'DM') {
-		return interaction.reply({ embeds: [] });
-	}
-	
-	try {
-		command?.execute(interaction, config);
-	} catch (error) {
-		console.error(error);
-		interaction.reply({ embeds: [embed.commandNotWork] });
-	};
-})
 
 client.login(config.token);
 
 
-/* Functions */
-function loadCommands() {
-	const guild = client.guilds.cache.get(config.guild);
-
-	guild?.commands.create({
-		name: 'oi',
-		description: 'oi',
-	})
-
-	commands.forEach(async command => {
-		if(command.name !== "criarcanal") return
-		
-		// console.log(command)
-		const registeredCommand = await guild?.commands.create({
-			name: command.name,
-			description: command.description,
-			options: command.options
-		});
-		
-		if(command.permissions) {
-			registeredCommand?.permissions.add({ permissions: command.permissions });
-		}
-		
-		if(command.booster) {
-			const allBoosters: Discord.ApplicationCommandPermissionData[] = config.booster.roles.map(role => {
-				return { id: role, type: 'ROLE', permission: true }
-			});
-			
-			registeredCommand?.permissions.add({ permissions: allBoosters });
-		}
-	});
-}
-function startFeatures() {
-	fs.readdir('dist/features', (_, files) => {
-		try {
-			files.forEach(file => {
-				const filePath = require(`./features/${file}`);
-	
-				filePath?.execute(client, config);
-			});
-		} catch (err) {
-			console.log(err);
-
-			process.exit();
-		}
-	});
-};
-
-
 /* Types */
-export type Commands = Map<string, Command>
-export type Command = {
-	name: string,
-	description: string,
-	options: Discord.ApplicationCommandOptionData[],
-	guildOnly?: boolean,
-	permissions?: Discord.ApplicationCommandPermissionData[],
-	booster?: boolean,
-	execute: (message: Discord.CommandInteraction, config: IConfig | any) => void
-}
-
-type Cooldowns = Map<string, any>;
+export type IHandler = (client: Discord.Client, config: IConfig) => void
 
 export type IConfig = {
-	token: string,
-	prefix: string,
-	guild: `${bigint}`,
-	chats: Array<`${bigint}`>
-	staffers: `${bigint}`[],
-	fhanyPresenceDetector: {
-		fhany: `${bigint}`,
-		roles: {
-			silence: `${bigint}`
-		},
-		blackListChannels: Array<`${bigint}`>,
-		whiteListChannels: Array<`${bigint}`>
-	},
-	programmer: `${bigint}`;
+	token: string
+	guildId: string
 
-	booster: {
-		roles: `${bigint}`[],
-		category: `${bigint}`
-	}
-
-	sendNotice: {
-		admChannel: `${bigint}`,
-		noticeChannel: `${bigint}`
-	}
-
-	temporaryCalls: {
-		controllerChannel: `${bigint}`,
-		category: `${bigint}`,
-		roles: {
-			booster: `${bigint}`,
-			vip: `${bigint}`
+	roles: {
+		boosters: {
+			role: string,
+			otherRoles: string[]
 		}
-	},
-	suggestion: {
-		channel: `${bigint}`,
-		permittedRoles: `${bigint}`[]
-	},
-	reminder: {
-		postChannel: `${bigint}`
+		staffers: string[]
+		adms: string[]
+		muted: string
+	}
+
+	channels: {
+		talk: string[]
+		suggestion: string
+	}
+
+	commands: {
+		boosterCall: {
+			category: string
+		},
+
+		sendNotice: {
+			admChannel: string
+			noticeChannel: string
+		}
+	}
+
+	features: {
+		fhanyPresenceDetector: {
+			whiteListChannels: string[]
+			blackListChannels: string[]
+			fhanyId: string
+		},
+
+		temporaryCalls: {
+			controllerChannel: string,
+			category: string
+		}
 	}
 }

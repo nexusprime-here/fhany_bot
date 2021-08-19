@@ -4,17 +4,17 @@ export const globalCommon = () => new MessageEmbed()
     .setColor('#F55EB3')
     .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>');
 
-export const globalWarn = () => new MessageEmbed()
-    .setTitle('⚠ Aviso')
+export const globalWarn = (content?: string) => new MessageEmbed()
+    .setDescription(content ? `⚠ | ${content}` : '⚠ | Aviso')
     .setColor('#FFFF00')
     .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>');
 
-export const globalError = () => new MessageEmbed()
-    .setTitle('❌ Whoops..')
+export const globalError = (content?: string) => new MessageEmbed()
+    .setDescription(content ? `❌ | ${content}` : '❌ | Whoops..')
     .setColor('#e31c17')
     .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>');
-
-export const globalSucess = () => new MessageEmbed()
-    .setTitle('✅ Sucesso')
+    
+export const globalSuccess = (content?: string) => new MessageEmbed()
+    .setDescription(content ? `✅ | ${content}` : '✅ | Sucesso')
     .setColor('#00FF00')
     .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>');

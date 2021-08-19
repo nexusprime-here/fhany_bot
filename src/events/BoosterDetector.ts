@@ -1,22 +1,25 @@
-import { Client, GuildMember } from "discord.js";
-import { commands, IConfig } from '../';
+import { commands } from '../';
 
 import embed from "../embeds/events.BoosterDetector";
+import { IEvent } from "../handlers/events";
 
-module.exports = {
-    name: 'guildMemberUpdate',
-    execute(oldData: GuildMember, newData: GuildMember, client: Client, config: IConfig) {
-        // if(oldData.premiumSince === newData.premiumSince) return;
-
-        // commands.forEach(command => {
-        //     if(!command.booster) return;
-
-        //     embed.message.addField(command.name, `${command.description} \n\nComo usar: \`${config.prefix}${command.name} ${command.usage}\``);
-        // });
+const boosterDetector: IEvent = {
+    active: true,
+    name: 'Detector Booster',
+    description: 'Envia uma mensagem de agradecimento e explicações de comandos booster do bot à membros que deram boost ao servidor.',
+    type: 'guildMemberUpdate',
+    execute(config, oldData, newData) { // this properties is any[]
+        commands.forEach(command => {
+            if(!command || command.forRoles !== 'booster') return;
+        });
         
-
-        // newData.user.send(embed.message); 
-
-        // floodando kaka
+        const hadRole = oldData.roles.cache.get(config.roles.boosters);
+        const hasRole = newData.roles.cache.get(config.roles.boosters);
+        
+        if (!hadRole && hasRole) {
+            newData.user.send({ embeds: [embed.message] });
+        }
     }
 }
+
+module.exports = boosterDetector;

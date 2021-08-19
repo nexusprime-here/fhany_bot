@@ -1,68 +1,67 @@
-import { APIUser } from "discord-api-types";
-import { Client, Message, User, PartialUser, MessageEmbed, MessageActionRow, MessageButton, Guild, Channel, TextChannel, DMChannel, NewsChannel } from "discord.js";
+import { 
+    Client, Message, User, MessageActionRow, MessageButton, TextChannel, DMChannel, NewsChannel
+} from "discord.js";
 import { IConfig } from "..";
-import database from "../database";
+import db from "../database";
 
 import embed from "../embeds/features.suggestion";
+import { IFeature } from "../handlers/features";
 
-const db: any = database;
-
-module.exports = {
-    name: "Suggetion", 
+const suggestion: IFeature = {
+    active: true,
+    name: "suggestion", 
     description: "Um sistema que separa as mensagens mais curtidas das menos curtidas", 
-    execute
-}
-
-function execute(client: Client, config: IConfig) {
-    const suggestionChannel = client.channels.cache.find(channel => channel.id === config.suggestion.channel);
-    if(!suggestionChannel || !suggestionChannel.isText() || suggestionChannel.isThread()) return;
-
-    const suggestionsCache: ISuggestionMessage[] = db.get('suggestionsCache').value();
-    let actionsCache: number = 0;
-
-    deleteAllOldMessages(suggestionChannel); 
-    reloadSuggestions(suggestionsCache, suggestionChannel, actionsCache);
-
-    client.on('messageCreate', async message => {
-        if(message.channel.id !== config.suggestion.channel) return;
-        if(message.author.bot) return;
-        if(message.content.startsWith(config.prefix) && message.author.id) return;
-
-        actionsCache++;
-
-        saveMessageInSuggestionsCache(message);
-        await deleteCommandMessage(message);
-    });
+    execute(client: Client, config: IConfig) {
+        const suggestionChannel = <TextChannel>client.channels.cache.get(config.channels.suggestion);
     
-    client.on('interactionCreate', async interaction => {
-        if (!interaction.isButton()) return;
-        if(interaction.channel?.id !== config.suggestion.channel) return;
-        if(interaction.member?.user.bot) return;
-
-        actionsCache++;
-
-        const findMessage = suggestionsCache.find(message => message.id === interaction.message.embeds[0].footer?.text);
-
-        if(await userAlreadyRated(interaction.user, findMessage?.id, suggestionsCache)) 
-            return interaction.reply({ embeds: [embed.alreadyRated], ephemeral: true });
-
-        if(!findMessage?.id) return;
-
-        if(interaction.customId === 'like') setRate('+', findMessage.id, interaction.user.id);
-        else if(interaction.customId === 'dislike') setRate('-', findMessage.id, interaction.user.id);
-        else return;
-
-        interaction.reply({ embeds: [embed.success], ephemeral: true });
-    })
-
-    setInterval(() => actionsCache > 0 && reloadSuggestions(suggestionsCache, suggestionChannel, actionsCache), 1000 * 60 * 10);
-
-    const date = new Date();
-    if(date.getHours() === 0) {
-        updateTimeRemainingOfSuggestions(suggestionsCache);
-        deleteSuggestionsWithoutTimeRemaining(suggestionsCache);
+        const suggestionsCache: ISuggestionMessage[] = db.get('suggestionsCache').value();
+        let actionsCache: number = 0;
+    
+        deleteAllOldMessages(suggestionChannel);
+        reloadSuggestions(suggestionsCache, suggestionChannel, actionsCache);
+    
+        client.on('messageCreate', async message => {
+            if(message.channel.id !== config.channels.suggestion) return;
+            if(message.author.bot) return;
+    
+            actionsCache++;
+    
+            saveMessageInSuggestionsCache(message);
+            await deleteCommandMessage(message);
+        });
+        
+        client.on('interactionCreate', async interaction => {
+            if (!interaction.isButton()) return;
+            if(interaction.channel?.id !== config.channels.suggestion) return;
+            if(interaction.member?.user.bot) return;
+    
+            actionsCache++;
+    
+            const findMessage = suggestionsCache.find(message => message.id === interaction.message.embeds[0].footer?.text);
+    
+            if(await userAlreadyRated(interaction.user, findMessage?.id, suggestionsCache)) 
+                return interaction.reply({ embeds: [embed.alreadyRated], ephemeral: true });
+    
+            if(!findMessage?.id) return;
+    
+            if(interaction.customId === 'like') setRate('+', findMessage.id, interaction.user.id);
+            else if(interaction.customId === 'dislike') setRate('-', findMessage.id, interaction.user.id);
+            else return;
+    
+            interaction.reply({ embeds: [embed.success], ephemeral: true });
+        })
+    
+        setInterval(() => actionsCache > 0 && reloadSuggestions(suggestionsCache, suggestionChannel, actionsCache), 1000 * 60 * 10);
+    
+        const date = new Date();
+        if(date.getHours() === 0) {
+            updateTimeRemainingOfSuggestions(suggestionsCache);
+            deleteSuggestionsWithoutTimeRemaining(suggestionsCache);
+        }
     }
 }
+
+module.exports = suggestion;
 
 
 /* Functions */
@@ -116,7 +115,8 @@ function userAlreadyRated(user: User, id: string | undefined, cache: ISuggestion
         terminated(false);
     });
 }
-async function deleteAllOldMessages(channel: any) {
+async function deleteAllOldMessages(channel: TextChannel | undefined) {
+    if(!channel) return;
     let fetched = await channel.messages.fetch();
     channel.bulkDelete(fetched);
 }
@@ -150,7 +150,11 @@ async function reloadSuggestions(cache: ISuggestionMessage[], channel: TextChann
     );
 
     reorganizedSuggestions.forEach(suggestion => {
-        channel.send({ embeds: [embed.suggestion(suggestion)], components: [row] });
+        const messageObject = { embeds: [embed.suggestion(suggestion)] }
+
+        if(!suggestion.accept) Object.assign(messageObject, { components: [row] });
+
+        channel.send(messageObject);
     });
 
     actionsCache = 0;

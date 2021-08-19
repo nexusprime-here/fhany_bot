@@ -1,0 +1,62 @@
+{
+  "usersThatCreatedCalls": [],
+  "boostersThatCreatedCalls": [],
+  "suggestionsCache": [
+    {
+      "icon": "https://cdn.discordapp.com/avatars/607999934725357578/d0ba886be26a678b5c104dbb2426fa43.webp",
+      "content": "b",
+      "id": "877989685975199784",
+      "author": {
+        "username": "</Nexus_Prime>",
+        "id": "607999934725357578"
+      },
+      "accept": false,
+      "likes": [],
+      "dislikes": [],
+      "daysRemaining": 7
+    },
+    {
+      "icon": "https://cdn.discordapp.com/avatars/607999934725357578/d0ba886be26a678b5c104dbb2426fa43.webp",
+      "content": "c",
+      "id": "877989688542101564",
+      "author": {
+        "username": "</Nexus_Prime>",
+        "id": "607999934725357578"
+      },
+      "accept": true,
+      "likes": [],
+      "dislikes": [],
+      "daysRemaining": 7
+    },
+    {
+      "icon": "https://cdn.discordapp.com/avatars/607999934725357578/d0ba886be26a678b5c104dbb2426fa43.webp",
+      "content": "e",
+      "id": "877989694871306281",
+      "author": {
+        "username": "</Nexus_Prime>",
+        "id": "607999934725357578"
+      },
+      "accept": false,
+      "likes": [],
+      "dislikes": [],
+      "daysRemaining": 7
+    },
+    {
+      "icon": "https://cdn.discordapp.com/avatars/607999934725357578/d0ba886be26a678b5c104dbb2426fa43.webp",
+      "content": "d",
+      "id": "877989691088064534",
+      "author": {
+        "username": "</Nexus_Prime>",
+        "id": "607999934725357578"
+      },
+      "accept": false,
+      "likes": [
+        "607999934725357578"
+      ],
+      "dislikes": [],
+      "daysRemaining": 7
+    }
+  ],
+  "reminders": [],
+  "noticesNotAnswered": []
+}
