@@ -3,11 +3,13 @@ const FileSync = require('lowdb/adapters/FileSync');
 const adapter = new FileSync('cache.json');
 const db = low(adapter);
 
-db.defaults({ 
+export const defaultCategories = { 
     usersThatCreatedCalls: [], 
     boostersThatCreatedCalls: [], 
     suggestionsCache: [], 
-    noticesNotAnswered: []
-}).write();
+    hashtags: {}
+}
+
+db.defaults(defaultCategories).write();
 
 export default db;

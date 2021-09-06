@@ -17,7 +17,7 @@ const temporaryCalls: IFeature = {
         const controllerChannel = <TextChannel>guild?.channels.cache.get(config.features.temporaryCalls.controllerChannel);
     
         removeEmptyCalls(guild);
-    
+
         const acceptedCategories = {
             '🛸┇ Arcade': 'Feitos para máquinas de arcade.', 
             '🍄┇ Plataforma': 'Personagens se move horizontalmente.', 
@@ -54,7 +54,11 @@ const temporaryCalls: IFeature = {
     
             interaction.reply({ embeds: [embed.success], ephemeral: true, components: [row] });
     
-            waitForUsersToJoin(createdChannel, interaction.user.id, guild);
+            const usersNotJoin = await waitForUsersToJoin(createdChannel);
+            if(usersNotJoin) {
+                createdChannel.delete();
+                db.get('usersThatCreatedCalls').remove({ userId: interaction.user.id }).write();
+            }
         });
     }
 }
@@ -76,12 +80,12 @@ function removeEmptyCalls(guild: Guild | undefined) {
 
         const channelInDb = db.get('usersThatCreatedCalls').find({ channelId: findChannel(user.channelId)?.id }).value();
         
-        const foundChannel: any = findChannel(user.channelId);
+        const foundChannel = <VoiceChannel>findChannel(user.channelId);
 
-        !!channelInDb && foundChannel.members.size === 0
-            && db.get('usersThatCreatedCalls').remove({ channelId: foundChannel.id }).write();
-            
-        foundChannel.members.size === 0 && foundChannel.delete();
+        if(channelInDb && foundChannel.members.size === 0) {
+            db.get('usersThatCreatedCalls').remove({ channelId: foundChannel.id }).write();
+            foundChannel.delete();
+        }
     });
     usersInDbBoosters.forEach(user => {
         if(!user) return;
@@ -90,28 +94,23 @@ function removeEmptyCalls(guild: Guild | undefined) {
 
         const foundChannel: any = findChannel(user.channelId);
 
-        !!channelInDb && foundChannel.members.size === 0 
-            && db.get('boostersThatCreatedCalls').remove({ channelId: foundChannel.id }).write();
-            
-        foundChannel.members.size === 0 && foundChannel.delete();
+        if(channelInDb && foundChannel.members.size === 0) {
+            db.get('usersThatCreatedCalls').remove({ channelId: foundChannel.id }).write();
+            foundChannel.delete();
+        }
     });
 }
-async function waitForUsersToJoin(channel: VoiceChannel | undefined, userId: string, guild: any, lol: boolean = false) {
-    if(channel === undefined) return;
+async function waitForUsersToJoin(channel: VoiceChannel | undefined): Promise<boolean> {
+    if(!channel) return false;
 
-    return new Promise<void | { id: string, delete: () => void }>(terminated => setTimeout(async () => {
-        const usersInCall: GuildMember[] = [];
-        await guild.channels.cache.get(channel.id).members.forEach((member: GuildMember) => {
-            usersInCall.push(member);
+    return new Promise(terminated => setTimeout(async () => {
+        const usersInCall = channel.members.map((member: GuildMember) => {
+            return member;
         });
-
-        if(usersInCall.length < 1) {
-            !channel.deleted && channel.delete();
-            db.get('usersThatCreatedCalls').remove({ userId: userId }).write();
-
-            terminated();
-        } else terminated(channel);
-    }, 1000 * 15));
+        
+        if(channel.deleted || usersInCall.length > 0) return terminated(false);
+        terminated(true)
+    }, 1000 * 15))
 }
 async function createChannel(channelName: string, userId: string, guild: Guild, config: IConfig) {
     if(!guild) return;

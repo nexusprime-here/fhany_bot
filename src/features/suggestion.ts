@@ -1,5 +1,5 @@
 import { 
-    Client, Message, User, MessageActionRow, MessageButton, TextChannel, DMChannel, NewsChannel
+    Client, Message, User, MessageActionRow, MessageButton, TextChannel, DMChannel, NewsChannel, ClientEvents, CommandInteraction
 } from "discord.js";
 import { IConfig } from "..";
 import db from "../database";
@@ -8,28 +8,40 @@ import embed from "../embeds/features.suggestion";
 import { IFeature } from "../handlers/features";
 
 const suggestion: IFeature = {
-    active: true,
-    name: "suggestion", 
-    description: "Um sistema que separa as mensagens mais curtidas das menos curtidas", 
-    execute(client: Client, config: IConfig) {
+    active: false,
+    name: "suggestion",
+    description: "Um sistema que separa as mensagens mais curtidas das menos curtidas",
+    async execute(client: Client, config: IConfig) {
         const suggestionChannel = <TextChannel>client.channels.cache.get(config.channels.suggestion);
-    
+
         const suggestionsCache: ISuggestionMessage[] = db.get('suggestionsCache').value();
         let actionsCache: number = 0;
     
         deleteAllOldMessages(suggestionChannel);
         reloadSuggestions(suggestionsCache, suggestionChannel, actionsCache);
-    
-        client.on('messageCreate', async message => {
-            if(message.channel.id !== config.channels.suggestion) return;
-            if(message.author.bot) return;
-    
+
+        client.on('addSuggestion', (interaction, content: string, category: string) => {
+            console.log(interaction.interaction);
+            if(interaction.user.bot) return;
+
             actionsCache++;
-    
-            saveMessageInSuggestionsCache(message);
-            await deleteCommandMessage(message);
+
+            db.get('suggestionsCache').push({
+                icon: interaction.user.avatar,
+                content: content,
+                id: interaction.id,
+                author: {
+                    username: interaction.user.username,
+                    id: interaction.user.id
+                },
+                accept: false,
+                likes: [],
+                dislikes: [],
+                daysRemaining: 7,
+                category
+            }).write();
         });
-        
+
         client.on('interactionCreate', async interaction => {
             if (!interaction.isButton()) return;
             if(interaction.channel?.id !== config.channels.suggestion) return;
@@ -56,7 +68,7 @@ const suggestion: IFeature = {
         const date = new Date();
         if(date.getHours() === 0) {
             updateTimeRemainingOfSuggestions(suggestionsCache);
-            deleteSuggestionsWithoutTimeRemaining(suggestionsCache);
+            deleteSuggestionsWithoutTimeRemaining();
         }
     }
 }
@@ -65,7 +77,7 @@ module.exports = suggestion;
 
 
 /* Functions */
-function deleteSuggestionsWithoutTimeRemaining(cache: ISuggestionMessage[]) {
+function deleteSuggestionsWithoutTimeRemaining() {
     db.get('suggestionsCache').remove({ daysRemaining: 0 }).write();
 }
 function updateTimeRemainingOfSuggestions(suggestionsCache: ISuggestionMessage[]) {
@@ -74,28 +86,7 @@ function updateTimeRemainingOfSuggestions(suggestionsCache: ISuggestionMessage[]
         thisSuggestion.assign({ daysRemaining: thisSuggestion.value().daysRemaining - 1 }).write();
     });
 }
-function saveMessageInSuggestionsCache(suggestionMessage: Message) {
-    if(!suggestionMessage.member) return;
-
-    db.get('suggestionsCache').push({
-        icon: suggestionMessage.author.avatarURL(),
-        content: suggestionMessage.content,
-        id: suggestionMessage.id,
-        author: {
-            username: suggestionMessage.member.user.username,
-            id: suggestionMessage.member.user.id
-        },
-        accept: false,
-        likes: [],
-        dislikes: [],
-        daysRemaining: 7
-    }).write();
-}
-async function deleteCommandMessage(message: Message) {
-    return await message.delete();
-}
 function setRate(rate: '+' | '-', suggestionId: string, userId: string) {
-    console.log(`foi`)
     const suggestion = db.get('suggestionsCache').find({ id: suggestionId })
 
     rate === '+' && suggestion.get('likes').push(userId).write();
@@ -150,7 +141,7 @@ async function reloadSuggestions(cache: ISuggestionMessage[], channel: TextChann
     );
 
     reorganizedSuggestions.forEach(suggestion => {
-        const messageObject = { embeds: [embed.suggestion(suggestion)] }
+        const messageObject = { embeds: [embed.suggestion(suggestion, suggestion.category)] }
 
         if(!suggestion.accept) Object.assign(messageObject, { components: [row] });
 
@@ -173,4 +164,5 @@ export interface ISuggestionMessage {
     likes: string[];
     dislikes: string[];
     daysRemaining: number;
+    category: 'forServer' | 'forFhany';
 }

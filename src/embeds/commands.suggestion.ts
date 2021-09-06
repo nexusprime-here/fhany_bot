@@ -17,5 +17,5 @@ export default {
         .setDescription('Oba! Sua sugestão foi aceita pela staff! Continue assim!!'),
 
     suggestionReject: globalCommon()
-        .setDescription('Sua sugestão não foi aceita e a staff prefiriu removê-la.'),
+        .setDescription('Sua sugestão não foi aceita e a staff preferiu removê-la.'),
 }

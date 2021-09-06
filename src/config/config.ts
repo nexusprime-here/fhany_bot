@@ -1,7 +1,7 @@
 import { IConfig } from ".."
 
 const config: IConfig = {
-    token: 'ODExMjUxOTQ1NTcwMDQxODc4.YCvfQA.2fz6TZNFHWftgfS-W2H_YgO7bGE',
+    token: 'ODExMjUxOTQ1NTcwMDQxODc4.YCvfQA.RUbnr2CnNu3Py9f-Ieq2y2kiXp4',
     guildId: '745049338396409886',
 
     roles: {
@@ -16,6 +16,7 @@ const config: IConfig = {
 
     channels: {
         suggestion: '812513954727067728',
+        trend: '',
         talk: ["750098094695383212", "812432082747260949"]
     },
 
@@ -30,11 +31,8 @@ const config: IConfig = {
     },
 
     features: {
-        fhanyPresenceDetector: {
-            blackListChannels: ["753636957967614105", "839538613586755664", "840691695766732830", "842533556269875271", "845505315327442964", "859283258013777950"],
-            whiteListChannels: ["813430062677491782", "750815469241368609", "749453914809565234"],
-            fhanyId: '569181224648835095'
-        },
+        trends: {},
+        
         temporaryCalls: {
             category: '745352852796473517',
             controllerChannel: '811768172079218729'

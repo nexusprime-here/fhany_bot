@@ -3,9 +3,9 @@
   "boostersThatCreatedCalls": [],
   "suggestionsCache": [
     {
-      "icon": "https://cdn.discordapp.com/avatars/607999934725357578/d0ba886be26a678b5c104dbb2426fa43.webp",
-      "content": "b",
-      "id": "877989685975199784",
+      "icon": "https://cdn.discordapp.com/avatars/607999934725357578/a_a9b82fd6fe3065a15b9fb80783d7dfa2.webp",
+      "content": "OIIII",
+      "id": "880440958121029643",
       "author": {
         "username": "</Nexus_Prime>",
         "id": "607999934725357578"
@@ -13,25 +13,13 @@
       "accept": false,
       "likes": [],
       "dislikes": [],
-      "daysRemaining": 7
+      "daysRemaining": 7,
+      "category": "forServer"
     },
     {
-      "icon": "https://cdn.discordapp.com/avatars/607999934725357578/d0ba886be26a678b5c104dbb2426fa43.webp",
-      "content": "c",
-      "id": "877989688542101564",
-      "author": {
-        "username": "</Nexus_Prime>",
-        "id": "607999934725357578"
-      },
-      "accept": true,
-      "likes": [],
-      "dislikes": [],
-      "daysRemaining": 7
-    },
-    {
-      "icon": "https://cdn.discordapp.com/avatars/607999934725357578/d0ba886be26a678b5c104dbb2426fa43.webp",
-      "content": "e",
-      "id": "877989694871306281",
+      "icon": "https://cdn.discordapp.com/avatars/607999934725357578/a_a9b82fd6fe3065a15b9fb80783d7dfa2.webp",
+      "content": "a",
+      "id": "880441297037557780",
       "author": {
         "username": "</Nexus_Prime>",
         "id": "607999934725357578"
@@ -39,24 +27,37 @@
       "accept": false,
       "likes": [],
       "dislikes": [],
-      "daysRemaining": 7
+      "daysRemaining": 7,
+      "category": "forFhany"
     },
     {
-      "icon": "https://cdn.discordapp.com/avatars/607999934725357578/d0ba886be26a678b5c104dbb2426fa43.webp",
-      "content": "d",
-      "id": "877989691088064534",
+      "icon": "https://cdn.discordapp.com/avatars/607999934725357578/a_a9b82fd6fe3065a15b9fb80783d7dfa2.webp",
+      "content": "a",
+      "id": "880475330379399188",
       "author": {
         "username": "</Nexus_Prime>",
         "id": "607999934725357578"
       },
       "accept": false,
-      "likes": [
-        "607999934725357578"
-      ],
+      "likes": [],
       "dislikes": [],
-      "daysRemaining": 7
+      "daysRemaining": 7,
+      "category": "forServer"
     }
   ],
   "reminders": [],
-  "noticesNotAnswered": []
+  "noticesNotAnswered": [],
+  "hashtags": {
+    "a": 3,
+    "souguei": 3,
+    "sla": 2,
+    "b": 1,
+    "abc": 4,
+    "oiSeusCorni": 2,
+    "kapakapa": 5,
+    "oi": 1,
+    "uyuy": 1,
+    "dkeadl": 1,
+    "dasd": 1
+  }
 }

@@ -1,4 +1,5 @@
-import { ApplicationCommandOptionChoice, Client, Message, TextChannel } from "discord.js";
+import { ApplicationCommandOptionChoice, Client, Interaction, Message, TextChannel } from "discord.js";
+import { client } from "..";
 import db from "../database";
 
 import embed from '../embeds/commands.suggestion';
@@ -7,65 +8,111 @@ import { ICommand } from "../handlers/commands";
 
 const allMessagesList = fetchAllMessagesList();
 const suggestion: ICommand = {
-    active: true,
+    active: false,
     name: 'sugestao',
-    description: 'Com este comando você pode aceitar ou rejeitar uma sugestão.',
-    forRoles: 'staff',
+    description: 'Comandos para o canal de sugestão',
+    forRoles: 'everyone',
     guildOnly: true,
     options: [
         {
-            name: 'opção',
-            description: 'Você pode aceitar ou rejeitar uma sugestão',
-            type: 'STRING',
-            choices: [
+            name: 'staffers',
+            description: 'Com este comando você pode aceitar ou rejeitar uma sugestão dos membros comuns',
+            type: 'SUB_COMMAND',
+            options: [
                 {
-                    name: 'aceitar',
-                    value: 'accept'
+                    name: 'opção',
+                    description: 'Você pode aceitar ou rejeitar uma sugestão',
+                    type: 'STRING',
+                    choices: [
+                        {
+                            name: 'aceitar',
+                            value: 'accept'
+                        },
+                        {
+                            name: 'rejeitar',
+                            value: 'reject'
+                        },
+                    ],
+                    required: true
                 },
                 {
-                    name: 'rejeitar',
-                    value: 'reject'
-                },
-            ],
-            required: true
+                    name: 'sugestão',
+                    description: 'Selecione a sugestão',
+                    type: 'STRING',
+                    choices: allMessagesList,
+                    required: true
+                }
+            ]
         },
         {
-            name: 'sugestão',
-            description: 'Selecione a sugestão',
-            type: 'STRING',
-            choices: allMessagesList,
-            required: true
+            name: 'members',
+            description: 'Você pode enviar uma sugestão para o servidor por este comando',
+            type: 'SUB_COMMAND',
+            options: [
+                {
+                    name: 'categoria',
+                    description: 'A categoria da sua sugestão',
+                    type: 'STRING',
+                    choices: [
+                        {
+                            name: 'Para o Servidor',
+                            value: 'forServer'
+                        },
+                        {
+                            name: 'Vídeo para a Fhany',
+                            value: 'forFhany'
+                        }
+                    ],
+                    required: true
+                },
+                {
+                    name: 'sugestão',
+                    description: 'A sua sugestão que deseja enviar',
+                    type: 'STRING',
+                    required: true
+                }
+            ]
         }
     ],
     async execute(interaction, config) {
-        const option = <'accept' | 'reject'>interaction.options.get('opção')?.value;
-        const suggestionId = <`${bigint}`>interaction.options.get('sugestão')?.value;
+        const subCommand = <'staffers' | 'members'>interaction.options.getSubcommand();
 
-        if(interaction.channel?.type !== 'GUILD_TEXT') return;
+        if(subCommand === 'staffers') {
+            const option = <'accept' | 'reject'>interaction.options.get('opção')?.value;
+            const suggestionId = <`${bigint}`>interaction.options.get('sugestão')?.value;
 
-        const suggestionChannel = <TextChannel | undefined>interaction.guild?.channels.cache.get(config.channels.suggestion);
-        if(!suggestionChannel) return;
+            if(interaction.channel?.type !== 'GUILD_TEXT') return;
 
-        const suggestionMessage = await findMessageTyped(suggestionId, suggestionChannel);
-        if(!suggestionMessage) return;
-        
-        if(option === 'accept') {
-            const id = suggestionMessage.embeds[0].footer?.text;
-            if(!id) return;
+            const suggestionChannel = <TextChannel | undefined>interaction.guild?.channels.cache.get(config.channels.suggestion);
+            if(!suggestionChannel) return;
 
-            editSuggestionMessage(suggestionMessage);
-            sendDataForDB(id);
-            alertSuggestionAuthor(id, interaction.client, true);
-
-            interaction.reply({ embeds: [embed.success(true)], ephemeral: true });
-        } else if(option === 'reject') {
-            const id = suggestionMessage.embeds[0].footer?.text;
-            if(!id) return;
+            const suggestionMessage = await findMessageTyped(suggestionId, suggestionChannel);
+            if(!suggestionMessage) return;
             
-            alertSuggestionAuthor(id, interaction.client);
-            deleteSuggestionMessage(suggestionMessage);   
+            if(option === 'accept') {
+                const id = suggestionMessage.embeds[0].footer?.text;
+                if(!id) return;
 
-            interaction.reply({ embeds: [embed.success()], ephemeral: true });
+                editSuggestionMessage(suggestionMessage);
+                sendDataForDB(id);
+                alertSuggestionAuthor(id, interaction.client, true);
+
+                interaction.reply({ embeds: [embed.success(true)], ephemeral: true });
+            } else if(option === 'reject') {
+                const id = suggestionMessage.embeds[0].footer?.text;
+                if(!id) return;
+                
+                alertSuggestionAuthor(id, interaction.client);
+                deleteSuggestionMessage(suggestionMessage);   
+
+                interaction.reply({ embeds: [embed.success()], ephemeral: true });
+            }
+        } else if(subCommand === 'members') {
+            client.emit('addSuggestion', { 
+                interaction,
+                content: interaction.options.getString('sugestão', true),
+                category: interaction.options.getString('categoria', true)
+            });
         }
     }
 }
@@ -98,9 +145,9 @@ function alertSuggestionAuthor(id: string, client: Client, accepted?: boolean) {
     client.users.cache.get(userId)?.send({ embeds: [accepted ? embed.suggestionAccept : embed.suggestionReject] });
 }
 function deleteSuggestionMessage(referenceMessage: Message) {
-    db.get('suggestionsCache').remove({ id: referenceMessage.embeds[0].footer?.text }).write()
+    db.get('suggestionsCache').remove({ id: referenceMessage.embeds[0].footer?.text }).write();
 
-    referenceMessage.delete();
+    !referenceMessage.deleted && referenceMessage.delete();
 }
 function fetchAllMessagesList() {
     const allMessagesInDatabase: ISuggestionMessage[] = db.get('suggestionsCache').value();

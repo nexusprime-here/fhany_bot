@@ -32,10 +32,16 @@ export const events: Map<string, IEvent> = new Discord.Collection();
 export const commands: Map<string, ICommand | ICommandWithPath> = new Discord.Collection();
 
 client.once('ready', async () => {
-	fs.readdirSync('./dist/handlers').forEach(file => {
-		const filePath: IHandler = require(`./handlers/${file}`);
-		
-		filePath(client, config);
+	fs.readdirSync('./dist/handlers').forEach(filePath => {
+		const file: IHandler = require(`./handlers/${filePath}`);
+	
+		try {
+			file(client, config);
+		} catch (err) {
+			console.error(`Erro no Handler ${filePath.split('.')[0]}: ${err}`);
+
+			process.exit();
+		}
 	});
 	
 	console.log(chalk.black.bgGreen('\nReady!'));
@@ -64,6 +70,7 @@ export type IConfig = {
 
 	channels: {
 		talk: string[]
+		trend: string
 		suggestion: string
 	}
 
@@ -79,14 +86,12 @@ export type IConfig = {
 	}
 
 	features: {
-		fhanyPresenceDetector: {
-			whiteListChannels: string[]
-			blackListChannels: string[]
-			fhanyId: string
-		},
+		trends: {
+
+		}
 
 		temporaryCalls: {
-			controllerChannel: string,
+			controllerChannel: string
 			category: string
 		}
 	}

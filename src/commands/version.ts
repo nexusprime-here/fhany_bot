@@ -1,4 +1,5 @@
 import { Message } from "discord.js";
+import { globalCommon } from "../embeds/global";
 import { ICommand } from "../handlers/commands";
 const packageJson = require('../../package.json');
 
@@ -8,8 +9,11 @@ const version: ICommand = {
     description: 'Mostra a versão atual do bot',
     forRoles: 'everyone',
     guildOnly: false,
-    execute(interaction) {
-        interaction.reply({ content: 'v' + packageJson.version });
+    async execute(interaction) {
+        const embed = globalCommon()
+            .setTitle(`v${packageJson.version}`);
+
+        interaction.reply({ embeds: [embed] });
     }
 }
 

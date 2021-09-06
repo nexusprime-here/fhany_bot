@@ -7,4 +7,6 @@ app.get('/', (req, res) => {
 	res.sendStatus(200);
 })
 
+require('./dist/')
+
 app.listen(process.env.PORT);

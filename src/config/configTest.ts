@@ -2,26 +2,27 @@ import { IConfig } from ".."
 
 const config: IConfig = {
     token: 'NzA5MDcyNjY5MDIyMzU1NDg2.XrglYg.HlJVQ0LdfCztxpWW_GReZulEyYg',
-    guildId: '772812962397421589',
+    guildId: '879421510522138714',
 
     roles: {
-        adms: ['779054882916925480', '876556417425899570'],
+        adms: ['879423018311499838'],
         boosters: {
-            role: '779055143815348244',
-            otherRoles: ['811601064792686612']
+            role: '879423165720330276',
+            otherRoles: ['880076793137233960']
         },
-        muted: '779055012038311944',
-        staffers: ['779055195028062269'],
+        muted: '879424924199047189',
+        staffers: ['879423277704044566'],
     },
 
     channels: {
-        suggestion: '813131329339260940',
-        talk: ['772812962854338561']
+        suggestion: '879423376786071572',
+        trend: '881899130300039168',
+        talk: ['879421510522138717']
     },
 
     commands: {
         boosterCall: {
-            category: "811380652740968460"
+            category: "879422024739606549"
         },
         sendNotice: {
             admChannel: '813131329339260940',
@@ -30,14 +31,11 @@ const config: IConfig = {
     },
 
     features: {
-        fhanyPresenceDetector: {
-            blackListChannels: [],
-            whiteListChannels: [],
-            fhanyId: '607999934725357578'
-        },
+        trends: {},
+        
         temporaryCalls: {
-            category: '811380652740968460',
-            controllerChannel: '819294096572809236'
+            category: '879422024739606549',
+            controllerChannel: '879422041873330176'
         }
     }
 }

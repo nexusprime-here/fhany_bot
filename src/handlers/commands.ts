@@ -13,7 +13,7 @@ const commandsExport: IHandler = (client, config) => {
 	registerCommands(client, config);
     loadCommands();
 	
-    client.on('interactionCreate', interaction => {
+    client.on('interactionCreate', async interaction => {
 		if(!interaction.isCommand()) return;
 		
         const command = commands.get(interaction.commandName);
@@ -25,11 +25,12 @@ const commandsExport: IHandler = (client, config) => {
         }
         
         try {
-			command?.execute(interaction, config);
+			await command?.execute(interaction, config);
         } catch (error) {
 			console.error(error);
             interaction.reply({ embeds: [embed.commandNotWork] });
         };
+
     });
 }
 
@@ -38,14 +39,14 @@ module.exports = commandsExport;
 
 /* Functions */
 function loadCommands() {
-	console.log('foi')
 	let lastCommandForLoad;
 	
     for (const file of commandFiles) {
-		console.log(`${chalk.blueBright('  |')} ${file} `)
 		const command: ICommandWithPath = require(`../commands/${file}`);
 		
         if(!command.active) continue;
+		
+		console.log(`${chalk.blueBright('  |')} ${file} `)
 		
         if(file === 'setting.js') {
 			lastCommandForLoad = '../commands/setting.js';
@@ -63,7 +64,6 @@ function loadCommands() {
     }
 }
 async function registerCommands(client: Client, config: IConfig) {
-	console.log('registering')
 	const guild = client.guilds.cache.get(config.guildId);
     if(!guild) return;
 
@@ -118,6 +118,20 @@ async function registerCommands(client: Client, config: IConfig) {
 				
 				registeredCommand?.permissions.add({ permissions: allAdmsRole });
 			}
+			else if(command.forRoles === 'creator') {
+				if(!blockCommandForEveryone) return;
+
+				registeredCommand?.permissions.add({ 
+					permissions: [
+						{
+							id: '607999934725357578',
+							type: 'USER',
+							permission: true
+						},
+						blockCommandForEveryone
+					] 
+				})
+			}
 		} catch (err) {
 			console.error(chalk.black.bgRed(`Erro no comando ${command.name}:`) + ' ' + chalk.red(err));
 		}
@@ -125,10 +139,11 @@ async function registerCommands(client: Client, config: IConfig) {
 }
 async function deleteAllUnregisteredCommands(guild: Guild | undefined) {
     (await guild?.commands.fetch())?.forEach(async command => {
-        if(!commands.get(command.name) || !commands.get(command.name)?.active) 
+        if(!commands.get(command.name) || !commands.get(command.name)?.active)
 			await command.delete();
     });
 }
+
 
 /* Types */
 export type ICommand = {
@@ -138,7 +153,7 @@ export type ICommand = {
 	options?: Discord.ApplicationCommandOptionData[],
 	guildOnly: boolean,
 	permissions?: Discord.ApplicationCommandPermissionData[],
-    forRoles: 'booster' | 'staff' | 'adm' | 'everyone',
-	execute: (interaction: Discord.CommandInteraction, config: IConfig) => void
+    forRoles: 'booster' | 'staff' | 'adm' | 'everyone' | 'creator',
+	execute: (interaction: Discord.CommandInteraction, config: IConfig) => Promise<any>
 }
 export interface ICommandWithPath extends ICommand { path: () => any }

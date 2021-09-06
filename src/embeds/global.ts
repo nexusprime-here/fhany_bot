@@ -4,17 +4,17 @@ export const globalCommon = () => new MessageEmbed()
     .setColor('#F55EB3')
     .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>');
 
-export const globalWarn = (content?: string) => new MessageEmbed()
-    .setDescription(content ? `⚠ | ${content}` : '⚠ | Aviso')
-    .setColor('#FFFF00')
+export const globalWarn = () => new MessageEmbed()
+    .setTitle(`⚠ │ Aviso`)
+    .setColor('#ffd336')
     .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>');
 
-export const globalError = (content?: string) => new MessageEmbed()
-    .setDescription(content ? `❌ | ${content}` : '❌ | Whoops..')
-    .setColor('#e31c17')
+export const globalError = (title?: string) => new MessageEmbed()
+    .setTitle(`❌ │ ${title ? title : 'Whoops..'}`)
+    .setColor('#ba2d42')
     .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>');
     
-export const globalSuccess = (content?: string) => new MessageEmbed()
-    .setDescription(content ? `✅ | ${content}` : '✅ | Sucesso')
-    .setColor('#00FF00')
+export const globalSuccess = (title?: string) => new MessageEmbed()
+    .setTitle(`✅ │ ${title ? title : 'Sucesso!'}`)
+    .setColor('#69b84f')
     .setFooter('Copyright © Fhany | Created by: </Nexus_Prime>');
