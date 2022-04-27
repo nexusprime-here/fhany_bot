@@ -1,5 +1,5 @@
 package-lock.json
 node_modules/
-db.json
-dist/
-temp/
+src/database/data/*
+.vscode/
+bot.env

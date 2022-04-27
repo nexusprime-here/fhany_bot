@@ -71,5 +71,5 @@
   },
   "include": [
     "./src/**/*"
-  ]
+, "v10_things/features.seasonPass.ts", "v10_things/features.trends.ts", "v10_things/handlers.commands.ts", "v10_things/seasonPass.ts", "other commands/version.ts", "other commands/suggestion.ts", "other commands/inventory.ts", "src/commands/bot.ts", "v10_things/message.ts"  ]
 }

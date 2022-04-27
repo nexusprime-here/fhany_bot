@@ -1,148 +1,142 @@
 import fs from 'fs';
-import Discord, { Client, Guild } from 'discord.js';
-import { commands, IConfig, IHandler } from '..';
-
-import embed from '../embeds/handlers.commands';
+import Discord from 'discord.js';
+import { Embed, IHandler } from '../main';
 import chalk from 'chalk';
+import idCache from '../database/ids';
+import path from 'path';
 
-const commandFiles = fs.readdirSync('./dist/commands').filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync(path.join(process.cwd(), 'src', 'commands'));
 
-const commandsExport: IHandler = (client, config) => {
+export function createCommand(e: ICommand): ICommand {
+    return e;
+}
+
+const commands: IHandler = async client => {
 	console.log(chalk.black.bgBlueBright('\nLoading commands'));
+	
+    for await (const file of commandFiles) {
+		const command: ICommand = (await import(`../commands/${file}`)).default;
 
-	registerCommands(client, config);
-    loadCommands();
+        if(!command.active) continue;
+        client.commands.set(command.name, command);
+
+		console.log(`${chalk.blueBright('  |')} ${command.name} `)
+    }
+
+	const guild = <Discord.Guild>client.guilds.cache.get(<string>await idCache.get('guildId'));
+
+	const roles = await idCache.get('roles');
+	if(!roles) return pushErrorInAllInteractions();
+
+	await deleteAllUnregisteredCommands();
+
+	client.commands.forEach(async command => {
+		if(!command.active) return;
+
+		const registeredCommand = await guild?.commands.create({
+			name: command.name,
+			description: command.description,
+			options: command.options ?? []
+		});
+
+		setPermissions(command, registeredCommand, roles);
+	});
 	
     client.on('interactionCreate', async interaction => {
 		if(!interaction.isCommand()) return;
 		
-        const command = commands.get(interaction.commandName);
-        
-        if(!command) return interaction.reply({ embeds: [] });
-        
-        if(command.guildOnly && interaction.channel?.type === 'DM') {
-			return interaction.reply({ embeds: [] });
-        }
+        const command = <ICommand>client.commands.get(interaction.commandName);
         
         try {
-			await command?.execute(interaction, config);
-        } catch (error) {
-			console.error(error);
-            interaction.reply({ embeds: [embed.commandNotWork] });
+			await command.execute(interaction);
+        } catch (err) {
+			console.error(chalk.black.bgRed(`Erro no Comando ${command.name}:`));
+            console.error(err);
+
+            interaction.reply('Ocorreu um erro ao executar o comando.');
         };
-
     });
-}
-
-module.exports = commandsExport;
 
 
-/* Functions */
-function loadCommands() {
-	let lastCommandForLoad;
-	
-    for (const file of commandFiles) {
-		const command: ICommandWithPath = require(`../commands/${file}`);
-		
-        if(!command.active) continue;
-		
-		console.log(`${chalk.blueBright('  |')} ${file} `)
-		
-        if(file === 'setting.js') {
-			lastCommandForLoad = '../commands/setting.js';
-            continue;
-        }
-		
-        Object.assign(command, { path: () => require(`../commands/${file}`) })
-		
-        commands.set(command.name, command);
-    }
-
-    if(lastCommandForLoad) {
-        lastCommandForLoad = require(lastCommandForLoad);
-        commands.set(lastCommandForLoad.name, lastCommandForLoad);
-    }
-}
-async function registerCommands(client: Client, config: IConfig) {
-	const guild = client.guilds.cache.get(config.guildId);
-    if(!guild) return;
-
-	await deleteAllUnregisteredCommands(guild);
-
-	commands.forEach(async command => {
-		try {
-			if(!command.active) return;
-
-			const everyone = guild.roles.everyone;
-
-			const registeredCommand = await guild?.commands.create({
-				name: command.name,
-				description: command.description,
-				options: command.options || []
-			});
+	/* Functions */
+	function pushErrorInAllInteractions() {
+		client.on('interactionCreate', async interaction => {
+			if(!interaction.isCommand()) return;
 			
-			if(command.permissions) {
-				registeredCommand?.permissions.add({ permissions: command.permissions });
-			}
-			
-			let blockCommandForEveryone: Discord.ApplicationCommandPermissionData | undefined;
-			if(command.forRoles !== 'everyone') {
-				blockCommandForEveryone = { id: everyone.id, type: 'ROLE', permission: false }
-			}
+			if(interaction.commandName !== 'bot') return interaction.reply(Embed.create('Erro', {
+				title: 'Comandos não disponíveis',
+				description: 'Ocorreu um erro ao carregar os comandos. Tente novamente mais tarde. \n\nErro: `Ids de cargos não encontrados`'
+			}));
 
-			if(command.forRoles === 'booster') {
-				const allBoostersRole: Discord.ApplicationCommandPermissionData[] = config.roles.boosters.otherRoles.map(role => {
-					return { id: role, type: 'ROLE', permission: true }
-				});
-				allBoostersRole.push({ id: config.roles.boosters.role, type: 'ROLE', permission: true });
+			client.commands.get('bot')?.execute(interaction);
+		});
+	}
+	async function deleteAllUnregisteredCommands() {
+		(await guild.commands.fetch())?.forEach(async command => {
+			if(!client.commands.get(command.name) || !client.commands.get(command.name)?.active)
+				await command.delete();
+		});
+	}
+	function setPermissions(command: ICommand, commandAplication:  Discord.ApplicationCommand, idRoles: Exclude<typeof roles, undefined>) {
+		const everyone = guild.roles.everyone;
 
-				blockCommandForEveryone && allBoostersRole.push(blockCommandForEveryone);
-				
-				registeredCommand?.permissions.add({ permissions: allBoostersRole });
-			} 
-			else if(command.forRoles === 'staff') {
-				const allStaffersRole: Discord.ApplicationCommandPermissionData[] = config.roles.staffers.map(role => {
-					return { id: role, type: 'ROLE', permission: true }
-				});
+		const allRoles: Discord.ApplicationCommandPermissionData[] = [];
 
-				blockCommandForEveryone && allStaffersRole.push(blockCommandForEveryone);
-				
-				registeredCommand?.permissions.add({ permissions: allStaffersRole });
-			} 
-			else if(command.forRoles === 'adm') {
-				const allAdmsRole: Discord.ApplicationCommandPermissionData[] = config.roles.adms.map(role => {
-					return { id: role, type: 'ROLE', permission: true }
-				});
-
-				blockCommandForEveryone && allAdmsRole.push(blockCommandForEveryone);
-				
-				registeredCommand?.permissions.add({ permissions: allAdmsRole });
-			}
-			else if(command.forRoles === 'creator') {
-				if(!blockCommandForEveryone) return;
-
-				registeredCommand?.permissions.add({ 
-					permissions: [
-						{
-							id: '607999934725357578',
-							type: 'USER',
-							permission: true
-						},
-						blockCommandForEveryone
-					] 
-				})
-			}
-		} catch (err) {
-			console.error(chalk.black.bgRed(`Erro no comando ${command.name}:`) + ' ' + chalk.red(err));
+		if(command.forRoles === 'everyone') {
+			allRoles.push({ id: everyone.id, type: 'ROLE', permission: true });
+		} else {
+			allRoles.push({ id: everyone.id, type: 'ROLE', permission: false });
 		}
-	});
+
+		switch (command.forRoles) {
+			case 'booster':
+				allRoles.push({
+					id: idRoles.booster,
+					type: 'ROLE',
+					permission: true
+				});
+				allRoles.push({
+					id: idRoles.vip,
+					type: 'ROLE',
+					permission: true
+				});
+				
+				break;
+			case 'staff':
+				idRoles.staffers.forEach(roleId => {
+					allRoles.push({
+						id: roleId,
+						type: 'ROLE',
+						permission: true
+					});
+				});
+
+				break;
+			case 'adm':
+				idRoles.adms.forEach(roleId => {
+					allRoles.push({
+						id: roleId,
+						type: 'ROLE',
+						permission: true
+					});
+				});
+
+				break;
+			case 'creator':
+				allRoles.push({
+					id: '607999934725357578',
+					type: 'USER',
+					permission: true
+				});
+				
+				break;
+		}
+
+		commandAplication.permissions.add({ permissions: allRoles });
+	}
 }
-async function deleteAllUnregisteredCommands(guild: Guild | undefined) {
-    (await guild?.commands.fetch())?.forEach(async command => {
-        if(!commands.get(command.name) || !commands.get(command.name)?.active)
-			await command.delete();
-    });
-}
+
+export default commands;
 
 
 /* Types */
@@ -154,6 +148,6 @@ export type ICommand = {
 	guildOnly: boolean,
 	permissions?: Discord.ApplicationCommandPermissionData[],
     forRoles: 'booster' | 'staff' | 'adm' | 'everyone' | 'creator',
-	execute: (interaction: Discord.CommandInteraction, config: IConfig) => Promise<any>
+	execute: (interaction: Discord.CommandInteraction) => Promise<any>
 }
-export interface ICommandWithPath extends ICommand { path: () => any }
+export type ISubCommand = (interaction: Discord.CommandInteraction, ...args: any) => Promise<any>

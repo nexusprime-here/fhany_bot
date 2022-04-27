@@ -1,51 +1,59 @@
 import fs from 'fs';
 import Discord from 'discord.js';
-import { events, IConfig, IHandler } from '..';
+import { IHandler, ModifiedClient } from '../main';
 import chalk from 'chalk';
+import path from 'path';
 
-const eventFiles = fs.readdirSync('./dist/events').filter(file => file.endsWith('.js'));
+const eventFiles = fs.readdirSync(path.join(process.cwd(), 'src', 'events'));
 
-const eventsExport: IHandler = (client, config) => {
+export function createEvent<K extends keyof Discord.ClientEvents>(e: IEvent<K>): IEvent<K> {
+    return e;
+}
+
+const events: IHandler = async client => {
     console.log(chalk.black.bgYellowBright('\nLoading events'));
 
-    for (const file of eventFiles) {
-        const event: IEvent = require(`../events/${file}`);
-        
-        if(!event.active) continue;
-
-        console.log(`${chalk.yellowBright('  |')} ${file} `);
-        
-        events.set(event.name, event);
-        
-        if (event.once) {
-            client.once(event.type, async (...args) => {
-                try {
-                    await event.execute(config, ...args)
-                } catch (err) {
-                    console.error(chalk.black.bgRed(`Erro no Event ${event.name}:`) + chalk.red(` ${err}`));
+    (async function executeEvents(files: typeof eventFiles | IEvent[]) {
+        for (const file of files) {
+            const event: IEvent | IEvent[] = await async function() {
+                if(typeof file === 'string') {
+                    return (await import(`../events/${file}`)).default;
+                } else {
+                    return file;
                 }
-            });
-        } else {
-            client.on(event.type, async (...args) => {
+            }();
+    
+            if(Array.isArray(event)) {
+                executeEvents(event);
+                continue;
+            }
+
+            if(!event.active) continue;
+            client.events.set(event.name, event);
+            
+            console.log(`${chalk.yellowBright('  |')} ${event.name} `);
+            
+            client[event.once ? 'once' : 'on'](event.type, async (...args: any) => {
                 try {
-                    await event.execute(config, ...args)
+                    await event.execute(client, ...args);
                 } catch (err) {
-                    console.error(chalk.black.bgRed(`Erro no Event ${event.name}:`) + chalk.red(` ${err }`));
+                    console.error(chalk.black.bgRed(`Erro no Event ${event.name}:`));
+                    console.error(err);
                 }
             });
         }
-    }
+    })(eventFiles);
 }
 
-module.exports = eventsExport;
+export default events;
 
 
 /* Types */
-export type IEvent = {
+export type IEvent<K extends keyof Discord.ClientEvents = any> = {
     active: boolean,
 	name: string,
 	description: string,
-	type: keyof Discord.ClientEvents,
+	type: K,
 	once?: boolean,
-	execute: (config: IConfig, ...args: any[]) => Promise<any>
+	execute: (client: ModifiedClient, ...args: Discord.ClientEvents[K]) => Promise<any>
 }

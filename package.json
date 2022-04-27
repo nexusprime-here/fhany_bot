@@ -1,12 +1,11 @@
 {
-  "name": "fhany_bot",
-  "version": "9.3.0",
+  "name": "bony",
+  "version": "alpha",
   "description": "Este é um bot de discord que fiz para a Fhany. Feito com muito carinho <3.",
-  "main": "server.js",
+  "main": "src/main.ts",
   "scripts": {
-    "test": "npx node@latest . test",
-    "build": "npx typescript@latest",
-    "start": "npx node@latest ."
+    "test": "ts-node-dev --transpile-only src/main.ts test",
+    "start": "ts-node src/main.ts"
   },
   "type": "commonjs",
   "repository": {
@@ -20,15 +19,29 @@
       "id": "607999934725357578"
     }
   },
-  "license": "Copyright © 2021 | Nícolas Estevão Lima",
+  "license": "Copyright | Todos os direitos reservados | Fhany",
   "dependencies": {
+    "@keyv/sqlite": "^3.0.0",
     "chalk": "^4.1.2",
-    "discord.js": "^13.1.0",
+    "discord.js": "^13.6.0",
+    "discord.js-easy-embed": "^1.4.4",
+    "dotenv": "^16.0.0",
     "express": "^4.17.1",
-    "lowdb": "^1.0.0"
+    "keyv": "^4.1.1",
+    "lowdb": "github:dankreiger/lowdb#chore/esm-cjs-hybrid-WITH-LIB",
+    "module-alias": "^2.2.2",
+    "mongoose": "^6.2.10",
+    "ts-node": "^10.7.0",
+    "winston": "^3.7.2"
   },
   "devDependencies": {
+    "@types/keyv": "^3.1.4",
+    "@types/lowdb": "^1.0.11",
     "@types/node": "^14.14.28",
+    "ts-node-dev": "^1.1.8",
     "typescript": "^4.4.2"
+  },
+  "_moduleAliases": {
+    "@utils": "src/utils"
   }
 }

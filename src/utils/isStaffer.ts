@@ -1,10 +1,11 @@
 import { GuildMember } from "discord.js";
-import { IConfig } from "..";
+import idCache, { IdTypes } from "../database/ids";
 
-function isStaffer(member: GuildMember | undefined, config: IConfig) {
+function isStaffer(member: GuildMember | undefined): Promise<boolean> {
     return new Promise<boolean>(terminated => {
-        member?.roles.cache.forEach(role => {
-            config.roles.staffers.includes(role.id) && terminated(true);
+        member?.roles.cache.forEach(async role => {
+            const roles = await idCache.get('roles');
+            roles?.staffers.includes(role.id) && terminated(true);
         });
 
         terminated(false);

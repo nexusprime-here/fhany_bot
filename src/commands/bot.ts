@@ -1,9 +1,8 @@
-import { ApplicationCommandOptionChoice, Message } from "discord.js";
-import db, { defaultCategories } from "../database";
+import { ApplicationCommandOptionChoice } from "discord.js";
+import cache from "../database/cache";
 import { ICommand } from "../handlers/commands";
-import util from 'util';
 
-const exit: ICommand = {
+export default <ICommand>{
     active: true,
     name: 'bot',
     description: 'Configura o bot, só pode ser usado pelo Criador.',
@@ -29,76 +28,86 @@ const exit: ICommand = {
                 }
             ]
         },
-        {
-            name: 'script',
-            description: 'Executa um script em JS',
-            type: 'SUB_COMMAND',
-            options: [
-                {
-                    name: 'script',
-                    description: 'O script que quer executar',
-                    type: 'STRING',
-                }
-            ]
-        }
+        // {
+        //     name: 'script',
+        //     description: 'Executa um script em JS',
+        //     type: 'SUB_COMMAND',
+        //     options: [
+        //         {
+        //             name: 'script',
+        //             description: 'O script que quer executar',
+        //             type: 'STRING',
+        //         }
+        //     ]
+        // }
     ],
     async execute(interaction) {
-        const subCommand = <'exit' | 'clean_cache' | 'script'>interaction.options.getSubcommand();
+        const subCommand = interaction.options.getSubcommand();
 
         if(subCommand === 'exit') {
             await interaction.reply({ content: 'Process exited', ephemeral: true });
             process.exit(0);
         } else if(subCommand === 'clean_cache') {
-            const categoryOfDatabase = <string>interaction.options.get('category')?.value;
+            const categoryOfDatabase = <keyof typeof cache['data']>interaction.options.getString('category', true);
 
-            db.get(categoryOfDatabase).remove({}).write();
+            let category: any = cache.data[categoryOfDatabase];
+
+            if(typeof category !== 'object') return;
+
+            if(Array.isArray(category)) {
+                category.length = 0;
+            } else {
+                category = {};
+            }
+
+            cache.data[categoryOfDatabase] = category;
+
+            await cache.write();
 
             interaction.reply({ content: `Cache ${categoryOfDatabase} cleaned`, ephemeral: true  });
         } else if(subCommand === 'script') {
-            const script = interaction.options.getString('script');
+            // const script = interaction.options.getString('script');
             
-            if(script) {
-                try {
-                    const guild = interaction.guild; // for eval
-                    let result = await eval(`(async () => { ${script} })()`);
-                    if(typeof result === 'object') result = util.inspect(result, { depth: 0 });
+            // if(script) {
+            //     try {
+            //         const guild = interaction.guild; // for eval
+            //         let result = await eval(`(async () => { ${script} })()`);
+            //         if(typeof result === 'object') result = util.inspect(result, { depth: 0 });
     
-                    interaction.reply(`\`\`\`\n${result}\`\`\``);
-                } catch (err) {
-                    interaction.reply(`\`\`\`\n${err}\`\`\``);
-                }
+            //         interaction.reply(`\`\`\`\n${result}\`\`\``);
+            //     } catch (err) {
+            //         interaction.reply(`\`\`\`\n${err}\`\`\``);
+            //     }
 
-            } else {
-                interaction.reply('Esperando script...');
+            // } else {
+            //     interaction.reply('Esperando script...');
 
-                const filter = (m: Message) => m.author.id === interaction.user.id;
-                const collector = await interaction.channel?.awaitMessages({ filter, max: 1, time: 1000 * 60, errors: ['time'] });
+            //     const filter = (m: Message) => m.author.id === interaction.user.id;
+            //     const collector = await interaction.channel?.awaitMessages({ filter, max: 1, time: 1000 * 60, errors: ['time'] });
                 
-                const message = collector?.first();
+            //     const message = collector?.first();
                 
-                if(!message?.content) return;
-                interaction.deleteReply();
+            //     if(!message?.content) return;
+            //     interaction.deleteReply();
 
-                try {
-                    const guild = interaction.guild; // for eval
-                    let result = await eval(`(async () => { ${message.content} })()`);
-                    if(typeof result === 'object') result = util.inspect(result, { depth: 0 });
+            //     try {
+            //         const guild = interaction.guild; // for eval
+            //         let result = await eval(`(async () => { ${message.content} })()`);
+            //         if(typeof result === 'object') result = util.inspect(result, { depth: 0 });
     
-                    message.reply(`\`\`\`\n${result}\`\`\``);
-                } catch (err) {
-                    message.reply(`\`\`\`\n${err}\`\`\``);
-                }
-            }   
+            //         message.reply(`\`\`\`\n${result}\`\`\``);
+            //     } catch (err) {
+            //         message.reply(`\`\`\`\n${err}\`\`\``);
+            //     }
+            // }   
         }
     }
 }
 
-module.exports = exit;
-
 
 /* Functions */
 function getCategoriesOfDatabase() {
-    const mappedCategories: ApplicationCommandOptionChoice[] = Object.keys(defaultCategories).map(category => {
+    const mappedCategories: ApplicationCommandOptionChoice[] = Object.keys(cache.data).map(category => {
         return { name: category, value: category };
     });
 

@@ -1,38 +1,56 @@
 import fs from 'fs';
-import Discord, { Client, ClientEvents } from 'discord.js';
-import { client, features, IConfig, IHandler } from '..';
+import Discord from 'discord.js';
 import chalk from 'chalk';
+import path from 'path';
 
-const featuresFiles = fs.readdirSync('./dist/features').filter(file => file.endsWith('.js'));
+import { IHandler, ModifiedClient } from '../main';
+import idCache from '../database/ids';
 
-const featuresExport: IHandler = (client, config) => {
+const featuresFiles = fs.readdirSync(path.join(process.cwd(), 'src', 'features'));
+
+export function createFeature(e: IFeature): IFeature {
+    return e;
+}
+
+const features: IHandler = async client => {
     console.log(chalk.black.bgMagenta('\nLoading features'));
 
     for (const file of featuresFiles) {
-        const feature: IFeature = require(`../features/${file}`);
-        if(!feature.active) continue;
-    
-        console.log(`${chalk.magenta('  |')} ${file} `);
+        const feature: IFeature = (await import(`../features/${file}`)).default;
         
-        features.set(feature.name, feature);
+        if(!feature.active) continue;
+        client.features.set(feature.name, feature);
+    
+        console.log(`${chalk.magenta('  |')} ${feature.name} `);
 
-        client.guilds.cache.forEach(async guild => {
-            try {    
-                await feature.execute(client, config, guild);
-            } catch (err) {
-                console.error(chalk.black.bgRed(`Erro no Feature ${feature.name}:`) + chalk.red(` ${err}`));
-            }
-        });
+        try {
+            const guild = client.guilds.cache.get(<string>await idCache.get('guildId'));
+            if(!guild) throw new Error('Guild not found');
+
+            await feature.execute(guild, {
+                commands: client.commands,
+                events: client.events,
+                features: client.features,
+            });
+        } catch (err) {
+            console.error(chalk.black.bgRed(`Erro no Feature ${feature.name}:`));
+            console.error(err);
+        }
     }
 }
 
-module.exports = featuresExport;
+export default features;
 
 
 /* Types */
+type _props = { 
+    commands: ModifiedClient['commands'],
+    events: ModifiedClient['events'],
+    features: ModifiedClient['features']
+}
 export type IFeature = {
     name: string,
 	description: string,
 	active: boolean,
-	execute: (client: Discord.Client, config: IConfig, guild: Discord.Guild) => Promise<any>;
+	execute: (guild: Discord.Guild, props: _props) => Promise<any>;
 }
